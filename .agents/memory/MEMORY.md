@@ -1,0 +1,2 @@
+- [SolveX 29 Products](solvex-products.md) — exact 29 products are in enterprise InitialCatalog.kt; IDs are SOLVEX-ZK-01 through SOLVEX-MASTER-29
+- [SolveX API Dependencies](solvex-api-deps.md) — nanoid and express-session must be in api-server dependencies, not workspace root

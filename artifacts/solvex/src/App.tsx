@@ -4,23 +4,32 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
+import Home from "./pages/Home";
+import Marketplace from "./pages/Marketplace";
+import ProductDetail from "./pages/ProductDetail";
+import ProblemDetail from "./pages/ProblemDetail";
+import PostProblem from "./pages/PostProblem";
+
 const queryClient = new QueryClient();
 
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Replit Agent is building...</h1>
-        <p className="mt-2 text-sm text-gray-600">Your app will appear here once it's ready.</p>
-      </div>
-    </div>
-  );
-}
+const Placeholder = ({ name }: { name: string }) => <div className="p-8"><h1 className="text-2xl font-mono text-primary mb-4">{name}</h1><p className="text-muted-foreground">Module coming online shortly.</p></div>;
+
+import { DashboardLayout } from "./components/DashboardLayout";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/marketplace" component={Marketplace} />
+      <Route path="/product/:id" component={ProductDetail} />
+      <Route path="/problems/:id" component={ProblemDetail} />
+      <Route path="/post-problem" component={PostProblem} />
+      <Route path="/library" component={() => <DashboardLayout><Placeholder name="User Library" /></DashboardLayout>} />
+      <Route path="/solver" component={() => <DashboardLayout><Placeholder name="Solver Dashboard" /></DashboardLayout>} />
+      <Route path="/portal" component={() => <DashboardLayout><Placeholder name="Client Portal" /></DashboardLayout>} />
+      <Route path="/owner" component={() => <DashboardLayout><Placeholder name="Owner Command Center" /></DashboardLayout>} />
+      <Route path="/analytics" component={() => <DashboardLayout><Placeholder name="Analytics" /></DashboardLayout>} />
+      <Route path="/login" component={() => <div className="min-h-screen flex items-center justify-center bg-background"><a href="/api/auth/login" className="text-primary font-mono text-xl hover:underline">Authenticate via Manus</a></div>} />
       <Route component={NotFound} />
     </Switch>
   );
