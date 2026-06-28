@@ -76,8 +76,21 @@ function OmniscientTerminal() {
         ))}
       </div>
 
-      <div style={{ marginTop: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", letterSpacing: "0.08em" }}>
-        53-PARADOX ENGINE v3.1 · dAIsy haMINJA
+      {/* dAIsy haMINJA Sovereign AI identity */}
+      <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+        <img
+          src="/daisy-haminja.png"
+          alt="dAIsy haMINJA"
+          style={{
+            width: 22, height: 22, borderRadius: "50%",
+            objectFit: "cover",
+            border: "1px solid #A78BFA44",
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", letterSpacing: "0.08em", lineHeight: 1.5 }}>
+          dAIsy haMINJA<br />53-PARADOX ENGINE v3.1
+        </div>
       </div>
     </div>
   );
@@ -186,19 +199,20 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
           display: "flex", flexDirection: "column", flexShrink: 0,
         }}>
           {/* Logo */}
-          <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid #1A2035" }}>
+          <div style={{ padding: "14px 16px 12px", borderBottom: "1px solid #1A2035" }}>
             <Link href="/">
               <div style={{ cursor: "pointer" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                  <div style={{
-                    width: 36, height: 36, background: "linear-gradient(135deg, #D4AF37, #B8860B)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 900, color: "#05080F",
-                  }}>SX</div>
-                  <div>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 900, color: "#D4AF37", letterSpacing: "0.06em" }}>SOLVEX</div>
-                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.2em", color: "#3D4560" }}>INSTITUTIONAL</div>
-                  </div>
+                <img
+                  src="/solvex-logo.png"
+                  alt="SOLVEX PARADOX BOX"
+                  style={{
+                    width: "100%", height: 80,
+                    objectFit: "contain", objectPosition: "left center",
+                    display: "block",
+                  }}
+                />
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.2em", color: "#3D4560", marginTop: 4 }}>
+                  INSTITUTIONAL · BDC ASSESSED
                 </div>
               </div>
             </Link>

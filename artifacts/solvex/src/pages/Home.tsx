@@ -128,15 +128,14 @@ export default function Home() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{
-            width: 44, height: 44,
-            background: "linear-gradient(135deg, #D4AF37, #B8860B)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 900, color: "#05080F",
-          }}>SX</div>
+          <img
+            src="/solvex-logo.png"
+            alt="SOLVEX PARADOX BOX"
+            style={{ height: 52, width: "auto", objectFit: "contain" }}
+          />
           <div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 900, color: "#D4AF37", letterSpacing: "0.08em" }}>SOLVEX</div>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: "0.22em", color: "#3D4560" }}>INSTITUTIONAL MARKETPLACE</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.16em", color: "#2A3050" }}>BDC ASSESSED · OSFI B-13</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
