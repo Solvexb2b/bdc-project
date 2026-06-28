@@ -1,6 +1,87 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useGetMe, useLogout } from "@workspace/api-client-react";
+
+// Elder Futhark runes for Chamber I (paradoxes 1–13)
+const FUTHARK = ["ᚠ","ᚢ","ᚦ","ᚨ","ᚱ","ᚲ","ᚷ","ᚹ","ᚺ","ᚾ","ᛁ","ᛃ","ᛇ"];
+
+function getParadoxSymbol(paradoxId: number): { symbol: string; chamber: string; color: string } {
+  if (paradoxId <= 13) return { symbol: FUTHARK[paradoxId - 1] ?? "ᚱ", chamber: "CHAMBER I", color: "#D4AF37" };
+  if (paradoxId <= 23) return { symbol: "☸", chamber: "CHAMBER II",  color: "#60A5FA" };
+  if (paradoxId <= 38) return { symbol: "𓁙", chamber: "CHAMBER III", color: "#A78BFA" };
+  if (paradoxId <= 48) return { symbol: "⬢", chamber: "CHAMBER IV",  color: "#34D399" };
+  return                        { symbol: "👁", chamber: "CHAMBER V",  color: "#F59E0B" };
+}
+
+function renderChamberIndicator(paradoxId: number): string {
+  const { symbol, chamber } = getParadoxSymbol(paradoxId);
+  const ts = new Date().toISOString().slice(11, 23);
+  return `[${ts}] GLASS_BOX_LIGHT // [CHAMBER_ENGAGED:${chamber}] -> ${symbol} (P${String(paradoxId).padStart(2,"0")})`;
+}
+
+function OmniscientTerminal() {
+  const [paradoxId, setParadoxId] = useState(1);
+  const [log, setLog] = useState<string[]>([]);
+  const [pulse, setPulse] = useState(false);
+  const logRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    const advance = () => {
+      setParadoxId(prev => {
+        const next = prev >= 53 ? 1 : prev + 1;
+        const line = renderChamberIndicator(next);
+        logRef.current = [...logRef.current.slice(-6), line];
+        setLog([...logRef.current]);
+        setPulse(p => !p);
+        return next;
+      });
+    };
+    const t = setInterval(advance, 1800);
+    return () => clearInterval(t);
+  }, []);
+
+  const current = getParadoxSymbol(paradoxId);
+
+  return (
+    <div style={{ padding: "12px 16px", borderBottom: "1px solid #1A2035" }}>
+      {/* Pulsing Chamber Symbol */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#D4AF37", boxShadow: pulse ? "0 0 12px 4px #D4AF3766" : "0 0 4px 1px #D4AF3733", transition: "box-shadow 0.9s ease", flexShrink: 0 }} />
+        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.18em", color: "#D4AF37", fontWeight: 600 }}>GLASS BOX ACTIVE</span>
+      </div>
+
+      {/* Paradox Archetype Display */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+        border: "1px solid " + current.color + "25",
+        background: current.color + "08", marginBottom: 8,
+      }}>
+        <div style={{ fontSize: 20, color: current.color, lineHeight: 1, minWidth: 24, textAlign: "center" }}>{current.symbol}</div>
+        <div>
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.18em", color: current.color, fontWeight: 700 }}>
+            {current.chamber} · P{String(paradoxId).padStart(2,"0")}
+          </div>
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.1em", color: "#3D4560", marginTop: 2 }}>
+            [CHAMBER_ENGAGED]
+          </div>
+        </div>
+      </div>
+
+      {/* Omniscient Terminal Log */}
+      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", lineHeight: 1.7, overflow: "hidden", maxHeight: 70 }}>
+        {log.slice(-4).map((line, i) => (
+          <div key={i} style={{ color: i === log.slice(-4).length - 1 ? current.color + "99" : "#2A3050", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {line}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", letterSpacing: "0.08em" }}>
+        53-PARADOX ENGINE v3.1 · dAIsy haMINJA
+      </div>
+    </div>
+  );
+}
 
 const NAV_ITEMS = [
   { href: "/marketplace", label: "PARADOX VAULT", icon: "◈" },
@@ -123,16 +204,8 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
           </div>
 
-          {/* Glass Box Indicator */}
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #1A2035" }}>
-            <GlassBoxLight />
-            <div style={{ marginTop: 8, fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#3D4560", letterSpacing: "0.12em" }}>
-              53-PARADOX ENGINE v3.1
-            </div>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#3D4560", letterSpacing: "0.12em" }}>
-              dAIsy haMINJA · SOVEREIGN AI
-            </div>
-          </div>
+          {/* Omniscient Terminal — Glass Box + Symbolic Logic Layer */}
+          <OmniscientTerminal />
 
           {/* Nav */}
           <nav style={{ flex: 1, padding: "12px 0", overflowY: "auto" }}>

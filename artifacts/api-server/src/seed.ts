@@ -332,32 +332,53 @@ const PRODUCTS = [
     priceUsdc: "540",
     priceBtc: "0.0054",
   },
+  // ── Paradox Nexus Extensions (30-31) ───────────────────────────────────
+  {
+    id: "SOLVEX-DPN-30",
+    name: "Dynamic-Paradox-Nexus: Liquidity Velocity Engine",
+    category: "operational",
+    description: "Resolves the Liquidity Velocity vs Settlement Finality Paradox (ParadoxEngine.LIQUIDITY_VELOCITY). Real-time gross settlement optimizer that reconciles instantaneous multi-currency liquidity demands against irreversible intraday finality windows in Canadian interbank clearing.",
+    solution: "LIQUIDITY_VELOCITY Orchestrator: Hash-time-locked contracts (HTLCs) for atomic cross-ledger settlement. Velocity scoring: ML model trained on 5 years of CDSX/Lynx flow data. Paradox resolution: Speculative pre-funding pool with automated rebalancing triggers at 99.7% confidence. ZK hash: 0x30_SYNC — TECOE pipeline registered. lockedRegistry[30] initialized.",
+    impact: JSON.stringify(["Intraday settlement finality < 200ms", "99.7% pre-funding accuracy on velocity scoring", "Eliminates $340M avg daily overnight liquidity drag", "HTLC atomic swaps across CDSX and Lynx rails"]),
+    priceEth: "0.14",
+    priceUsdc: "420",
+    priceBtc: "0.0042",
+  },
+  {
+    id: "SOLVEX-DPN-31",
+    name: "Dynamic-Paradox-Nexus: Autonomous Evolution Protocol",
+    category: "ai",
+    description: "Resolves the Autonomous System Drift vs Regulatory Determinism Paradox (ParadoxEngine.AUTONOMOUS_EVOLUTION). Enables dAIsy haMINJA to self-modify its governance rule-set in response to OSFI guidance updates while maintaining cryptographic proof of every prior and current policy state.",
+    solution: "AUTONOMOUS_EVOLUTION Compiler: Immutable policy DAG — every rule revision appended as a new node, no history destroyed. Paradox 13 (Trust vs Protection) bridge: Glass Box logs every autonomous decision before execution. Emergency halt: Paradox 07 triggerEmergencyHardwarePanic() terminates evolution loop in < 1ms. ZK hash: 0x31_SYNC — TECOE pipeline registered. lockedRegistry[31] initialized.",
+    impact: JSON.stringify(["Policy DAG versioned with cryptographic linking", "Self-modification latency < 1ms with full audit trail", "Paradox 07 emergency halt kills evolution in < 1ms", "OSFI A-1 AI Risk framework auto-compliance on rule update"]),
+    priceEth: "0.17",
+    priceUsdc: "510",
+    priceBtc: "0.0051",
+  },
 ];
 
 export async function seedProducts() {
   try {
-    const existing = await db.select().from(paradoxProductsTable).limit(1);
-    if (existing.length > 0) {
-      logger.info("Products already seeded, skipping");
-      return { success: true, count: 0, message: "Already seeded" };
-    }
-
+    let inserted = 0;
     for (const p of PRODUCTS) {
-      await db.insert(paradoxProductsTable).values({
-        id: p.id,
-        name: p.name,
-        category: p.category,
-        description: p.description,
-        solution: p.solution,
-        impact: p.impact,
-        priceEth: p.priceEth,
-        priceUsdc: p.priceUsdc,
-        priceBtc: p.priceBtc,
-      });
+      const result = await db
+        .insert(paradoxProductsTable)
+        .values({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          description: p.description,
+          solution: p.solution,
+          impact: p.impact,
+          priceEth: p.priceEth,
+          priceUsdc: p.priceUsdc,
+          priceBtc: p.priceBtc,
+        })
+        .onConflictDoNothing();
+      if ((result.rowCount ?? 0) > 0) inserted++;
     }
-
-    logger.info({ count: PRODUCTS.length }, "Products seeded successfully");
-    return { success: true, count: PRODUCTS.length, message: `Seeded ${PRODUCTS.length} products` };
+    logger.info({ total: PRODUCTS.length, inserted }, "Vault registry synchronized");
+    return { success: true, count: inserted, total: PRODUCTS.length, message: `Vault registry: ${PRODUCTS.length} products (${inserted} new)` };
   } catch (err) {
     logger.error({ err }, "Failed to seed products");
     throw err;
