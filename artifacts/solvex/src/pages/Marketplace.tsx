@@ -11,7 +11,6 @@ const DOMAIN_META: Record<string, { badge: string; color: string; chamber: strin
 
 const DOMAINS = ["ALL", "fundamental", "operational", "ai"];
 const DOMAIN_LABELS: Record<string, string> = {
-  ALL: "ALL 31 PRODUCTS",
   fundamental: "ZK & CRYPTOGRAPHY",
   operational: "HFT & COMPLIANCE",
   ai:          "AI & GOVERNANCE",
@@ -35,7 +34,7 @@ export default function Marketplace() {
         {/* Page Header */}
         <div style={{ padding: "32px 40px 0", borderBottom: "1px solid #1A2035" }}>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.22em", color: "#3D4560", marginBottom: 8 }}>
-            SOLVEX · PARADOX VAULT · 31 TIER-1 ENTERPRISE SOLUTIONS
+            SOLVEX · PARADOX VAULT · {products?.length ?? ""} TIER-1 ENTERPRISE SOLUTIONS
           </div>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 36, fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.01em", marginBottom: 20 }}>
             Institutional Marketplace
@@ -65,8 +64,8 @@ export default function Marketplace() {
               margin: "0 -40px", padding: "14px 40px",
             }}>
               {[
-                { val: "31", lbl: "PRODUCTS" }, { val: "5", lbl: "CHAMBERS" },
-                { val: "53", lbl: "PARADOXES" }, { val: "$4.2B", lbl: "CLEARED DAILY" },
+                { val: String(products?.length ?? ""), lbl: "PRODUCTS" }, { val: "5", lbl: "CHAMBERS" },
+                { val: "59", lbl: "PARADOXES" }, { val: "$4.2B", lbl: "CLEARED DAILY" },
                 { val: "99.999%", lbl: "SLA" }, { val: "OSFI ✓", lbl: "CERTIFIED" },
               ].map((s, i) => (
                 <div key={i} style={{ flex: 1, borderLeft: i > 0 ? "1px solid #1A2035" : "none", paddingLeft: i > 0 ? 20 : 0 }}>
@@ -90,11 +89,11 @@ export default function Marketplace() {
                   fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, fontWeight: 700,
                   letterSpacing: "0.14em", cursor: "pointer",
                 }}>
-                  {DOMAIN_LABELS[d] ?? d.toUpperCase()}
+                  {d === "ALL" ? `ALL ${products?.length ?? ""} PRODUCTS` : (DOMAIN_LABELS[d] ?? d.toUpperCase())}
                 </button>
               ))}
               <div style={{ marginLeft: "auto", fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "#3D4560" }}>
-                {filtered.length} / 31 SOLUTIONS
+                {filtered.length} / {products?.length ?? ""} SOLUTIONS
               </div>
             </div>
 
