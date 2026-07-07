@@ -689,7 +689,7 @@ export default function BrainConsole() {
 
           {/* APD-01 Directive Strip — CORE-02 8-directive manifest */}
           <div style={{ position: "relative", zIndex: 1, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(212,175,55,0.12)" }}>
-            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: GOLD, marginBottom: 8 }}>APD-01 — AUTONOMOUS PROTOCOL DIRECTIVE &nbsp;·&nbsp; SOLVEX-CORE-02</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: GOLD, marginBottom: 8 }}>APD-01 — AUTONOMOUS PROTOCOL DIRECTIVE &nbsp;·&nbsp; SOLVEX-CORE-03</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 32px" }}>
               {[
                 { num: "01", tag: "AUTONOMOUS CORE",        desc: "dAIsy manages paradox synthesis, marketplace bounties and autonomic self-healing" },
