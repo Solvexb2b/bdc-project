@@ -94,13 +94,13 @@ export default function ValidationSandbox() {
     setRunning(true);
     setDone(false);
     setElapsed(0);
-    const fresh = config.steps.map(s => ({ ...s, status: "pending" as const }));
+    const fresh: ProofStep[] = config.steps.map(s => ({ ...s, status: "pending" as const }));
     setSteps(fresh);
 
     startRef.current = Date.now();
     timerRef.current = setInterval(() => setElapsed(Date.now() - startRef.current), 50);
 
-    const updated = [...fresh];
+    const updated: ProofStep[] = [...fresh];
     for (let i = 0; i < updated.length; i++) {
       updated[i] = { ...updated[i], status: "running" };
       setSteps([...updated]);

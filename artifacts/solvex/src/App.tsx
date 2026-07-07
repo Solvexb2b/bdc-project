@@ -11,12 +11,13 @@ import ProblemDetail from "./pages/ProblemDetail";
 import PostProblem from "./pages/PostProblem";
 import BrainConsole from "./pages/BrainConsole";
 import ChallengeHub from "./pages/ChallengeHub";
+import Library from "./pages/Library";
+import SolverDashboard from "./pages/SolverDashboard";
+import ClientPortal from "./pages/ClientPortal";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import Analytics from "./pages/Analytics";
 
 const queryClient = new QueryClient();
-
-const Placeholder = ({ name }: { name: string }) => <div className="p-8"><h1 className="text-2xl font-mono text-primary mb-4">{name}</h1><p className="text-muted-foreground">Module coming online shortly.</p></div>;
-
-import { DashboardLayout } from "./components/DashboardLayout";
 
 function Router() {
   return (
@@ -28,11 +29,11 @@ function Router() {
       <Route path="/post-problem" component={PostProblem} />
       <Route path="/brain" component={BrainConsole} />
       <Route path="/challenges" component={ChallengeHub} />
-      <Route path="/library" component={() => <DashboardLayout><Placeholder name="User Library" /></DashboardLayout>} />
-      <Route path="/solver" component={() => <DashboardLayout><Placeholder name="Solver Dashboard" /></DashboardLayout>} />
-      <Route path="/portal" component={() => <DashboardLayout><Placeholder name="Client Portal" /></DashboardLayout>} />
-      <Route path="/owner" component={() => <DashboardLayout><Placeholder name="Owner Command Center" /></DashboardLayout>} />
-      <Route path="/analytics" component={() => <DashboardLayout><Placeholder name="Analytics" /></DashboardLayout>} />
+      <Route path="/library" component={Library} />
+      <Route path="/solver" component={SolverDashboard} />
+      <Route path="/portal" component={ClientPortal} />
+      <Route path="/owner" component={OwnerDashboard} />
+      <Route path="/analytics" component={Analytics} />
       <Route path="/login" component={() => <div className="min-h-screen flex items-center justify-center bg-background"><a href="/api/auth/login" className="text-primary font-mono text-xl hover:underline">Authenticate via Manus</a></div>} />
       <Route component={NotFound} />
     </Switch>

@@ -286,7 +286,7 @@ export async function runFeasibilityGate(
       .from(daisyBrainTable)
       .where(
         or(
-          ilike(daisyBrainTable.category, `%${category}%`),
+          ilike(daisyBrainTable.paradoxCategory, `%${category}%`),
           ilike(daisyBrainTable.resolutionType, `%${matchedResolutionTypes[0] ?? "behavioral"}%`),
         )
       )
