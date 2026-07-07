@@ -216,7 +216,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
                   }}
                 />
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.2em", color: "#3D4560", marginTop: 4 }}>
-                  INSTITUTIONAL · BDC ASSESSED
+                  OSFI B-13 · SOC 2 · NIST · PIPEDA
                 </div>
               </div>
             </Link>

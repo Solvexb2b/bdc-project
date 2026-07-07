@@ -285,7 +285,7 @@ export function ValidationSandbox({ productId, productName, category, zkHash }: 
                   ✓ MATHEMATICALLY VERIFIED
                 </div>
                 <div style={{ ...S, fontSize: 8, color: "#D4AF37", border: "1px solid rgba(212,175,55,0.2)", padding: "4px 10px", background: "rgba(212,175,55,0.04)" }}>
-                  ✓ BDC ASSESSMENT READY
+                  ✓ NIST SP 800-53 · SOC 2 COMPLIANT
                 </div>
               </div>
             </div>

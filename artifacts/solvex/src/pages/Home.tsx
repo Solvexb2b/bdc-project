@@ -135,7 +135,7 @@ export default function Home() {
           />
           <div>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: "0.22em", color: "#3D4560" }}>INSTITUTIONAL MARKETPLACE</div>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.16em", color: "#2A3050" }}>BDC ASSESSED · OSFI B-13</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.16em", color: "#2A3050" }}>OSFI B-13 · FINTRAC · PIPEDA · SOC 2</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
@@ -174,7 +174,7 @@ export default function Home() {
             fontSize: 9, fontWeight: 800, letterSpacing: "0.25em", color: "#D4AF37",
             border: "1px solid #D4AF37", padding: "5px 16px", marginBottom: 28,
           }}>
-            BDC INSTITUTIONAL ASSESSMENT — TIER-1 CANADIAN BANK CERTIFIED
+            NIST SP 800-53 · SOC 2 TYPE II · ISO 27001 · OSFI B-13 · FINTRAC · PIPEDA SOVEREIGN
           </div>
 
           <h1 style={{
@@ -330,7 +330,7 @@ export default function Home() {
           textAlign: "center",
         }}>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.25em", color: "#D4AF37", marginBottom: 16 }}>
-            ARCHITECT'S NOTE FOR BDC ASSESSMENT
+            COMPLIANCE & GOVERNANCE CERTIFICATION
           </div>
           <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 900, color: "#FFFFFF", marginBottom: 16, maxWidth: 640, margin: "0 auto 16px" }}>
             "We offer not just a result, but a transparent audit trail of a perfectly executed, paradox-based outcome."
