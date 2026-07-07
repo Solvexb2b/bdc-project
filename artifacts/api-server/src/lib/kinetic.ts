@@ -29,7 +29,7 @@ import { tickLamport } from "./lamport";
 import { getLastConsensus, triggerConsensusProbe, tetherWrite, TETHER_SLOTS } from "./workers";
 import { logger } from "./logger";
 import { getAccretionStatus, getPerSolutionFloor } from "./accretion";
-import { resolveHeuristic, type ParadoxState } from "./heuristic-kernel";
+import { resolveHeuristic, kernelStatus, type ParadoxState } from "./heuristic-kernel";
 import { emitIntent } from "./intent";
 
 // ── Physical constants ─────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ async function synthesizeParadox(
 
   const content = [
     `[FORCE-COLLAPSE SYNTHESIS — Node ${nodeId} — Round ${snap.consensusRound}]`,
-    `KERNEL: DETERMINISTIC_HEURISTIC v1.0 | ZERO_HALLUCINATION`,
+    `KERNEL: TETHER_BUBBLE_SYNTHESIS v2.0 | ZERO_HALLUCINATION | ${kernelStatus().historicalKeys} HISTORICAL KEYS`,
     ``,
     `Problem: ${problem.title}`,
     `Collapse Hash: ${collapseHash}`,
