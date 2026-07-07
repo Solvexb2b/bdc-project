@@ -143,12 +143,30 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-043", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Non-Pageable RAM Partition Lock",             description: "Prevents the underlying kernel from swapping out critical core execution code blocks to secondary storage." },
   { id: "S-044", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Hardware Co-Processor Task Delegator",        description: "Offloads specialized vector and matrix arithmetic tasks directly to physical auxiliary accelerators." },
   { id: "S-045", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Sensor Register Polling Loop",                description: "Implements ultra-fast, non-blocking hardware state checks for mission-critical sensor inputs." },
+
+  // ─── LAYER 4: AD-HOC ROUTING, MESH & DHT NETWORKING (S-046–S-060) ────────
+  { id: "S-046", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "AODV Ad-Hoc Mesh Router",                         description: "Establishes dynamic, self-healing routing tunnels through shifting networks of neighboring nodes." },
+  { id: "S-047", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Voice-Over-Mesh Packetizer",                       description: "Transmits encrypted priority voice packets at a compacted 32kbps data rate over active mesh structures." },
+  { id: "S-048", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "DHT Erasure Coder",                                description: "Shards local data packets into redundant fragments, requiring only a fraction for full reconstruction." },
+  { id: "S-049", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Peer Velocity Vector Tracker",                     description: "Analyzes relative movement vectors of peer nodes to proactively predict and avoid routing links about to fail." },
+  { id: "S-050", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Ad-Hoc Network Topology Beacon",                   description: "Broadcasts periodic high-contrast topology beacons to maintain localized neighborhood tables." },
+  { id: "S-051", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Dynamic Congestion Tunneler",                      description: "Automatically routes traffic around highly congested or heavily loaded mesh gateway nodes." },
+  { id: "S-052", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "DHT Finger Table Optimizer",                       description: "Maintains high-speed routing shortcut indexes to resolve network queries in O(log N) hops." },
+  { id: "S-053", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Pheromone Signal Decay Tracker",                   description: "Gradually diminishes routing search trail weights to ensure stale network paths are forgotten." },
+  { id: "S-054", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Dynamic TTL Packet Limiter",                       description: "Scales packet survival lifetimes based on local node density to prevent signal flooding." },
+  { id: "S-055", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Opportunistic Packet Forwarding Engine",           description: "Temporarily holds and forwards packets when a neighboring node is briefly disconnected." },
+  { id: "S-056", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "DHT Partition Merging Agent",                      description: "Re-aligns and merges separated hash table databases when isolated network islands reconnect." },
+  { id: "S-057", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Self-Healing Route Discovery Loop",                description: "Automatically broadcasts repair queries to discover alternate paths when an active route breaks." },
+  { id: "S-058", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Asymmetrical Link Margin Estimator",               description: "Evaluates signal strength in both directions to prevent routing through unreliable, one-way channels." },
+  { id: "S-059", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Multi-Hop Mesh Packet Fragmenter",                 description: "Slices large transactions into tiny MTU-optimized frames to maintain high packet transmission success rates." },
+  { id: "S-060", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "DHT Anti-Entropy Synchronizer",                    description: "Performs lightweight, background peer-to-peer data gossiping to maintain dynamic hash table completeness." },
 ];
 
 export const SOLUTION_LAYERS = [
   { num: 1, name: "Chrono-Consistency & Time Synchronization", solutions: 15, color: "#60A5FA", symbol: "⧖", desc: "Deterministic clock ordering, Lamport causality, anti-skew and temporal compaction" },
   { num: 2, name: "Enclave Cryptography & Sandboxed Security", solutions: 15, color: "#A78BFA", symbol: "⬡", desc: "Military-grade enclaves, zero-knowledge proofs, memory isolation and bytecode verification" },
   { num: 3, name: "Hardware Orchestration & Bare-Metal Access", solutions: 15, color: "#34D399", symbol: "⬢", desc: "Direct register mapping, DMA pipelines, thread pinning and zero-copy hardware access" },
+  { num: 4, name: "Ad-Hoc Routing, Mesh & DHT Networking",      solutions: 15, color: "#F59E0B", symbol: "◈", desc: "AODV self-healing mesh, DHT finger tables, pheromone decay and opportunistic forwarding" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
