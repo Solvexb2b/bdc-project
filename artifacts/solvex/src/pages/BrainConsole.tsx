@@ -886,20 +886,48 @@ function useLiveTelemetry() {
 }
 
 // ── QUANTUM FOUNDRY ────────────────────────────────────────────────────────────
+const AXIOM_LIBRARY = [
+  { id: "AX-001", name: "SET THEORY COLLAPSE",      domain: "TOPOLOGY",    status: "SOLVED" },
+  { id: "AX-002", name: "BAYESIAN UNCERTAINTY",      domain: "PROBABILITY", status: "SOLVED" },
+  { id: "AX-003", name: "CAUSAL LOOP DISSOLUTION",   domain: "CAUSAL",      status: "SOLVED" },
+  { id: "AX-004", name: "PREDICATE PARADOX",         domain: "LOGIC",       status: "SOLVED" },
+  { id: "AX-005", name: "FRACTAL CONVERGENCE",       domain: "GEOMETRY",    status: "SOLVED" },
+  { id: "AX-006", name: "FUZZY BOUNDARY RESOLUTION", domain: "FUZZY",       status: "SOLVED" },
+  { id: "AX-007", name: "IDENTITY EIGENSTATE",       domain: "IDENTITY",    status: "SOLVED" },
+  { id: "AX-008", name: "INFORMATION ENTROPY MIN",   domain: "INFORMATION", status: "SOLVED" },
+  { id: "AX-009", name: "BEHAVIORAL EQUILIBRIUM",    domain: "BEHAVIORAL",  status: "SOLVED" },
+  { id: "AX-010", name: "CALCULUS OF VARIATIONS",    domain: "CALCULUS",    status: "SOLVED" },
+  { id: "AX-011", name: "TETHER-BUBBLE COHERENCE",   domain: "QUANTUM",     status: "SOLVED" },
+  { id: "AX-012", name: "LAMPORT CAUSALITY LOCK",    domain: "TEMPORAL",    status: "SOLVED" },
+];
+
+const HYBRID_ROUTING = [
+  { problem: "High-dimensional combinatorial optimization (>500 variables)",  path: "QPU",       backend: "IBM Quantum Eagle r3",       reason: "QAOA advantage zone" },
+  { problem: "Linear constraint satisfaction (<200 variables)",               path: "CLASSICAL",  backend: "54-node inference kernel",    reason: "Classical sufficient" },
+  { problem: "Cryptographic hash verification (SHA-3 family)",                path: "CLASSICAL",  backend: "FIPS 203 KEM boundary",       reason: "Deterministic required" },
+  { problem: "Portfolio optimization with >1000 assets",                      path: "QPU",       backend: "Azure Quantum IonQ Aria 1",   reason: "Superposition advantage" },
+  { problem: "Paradox axiom cross-reference (88-template KB)",                path: "CLASSICAL",  backend: "TETHER-BUBBLE v2.0 kernel",  reason: "Template match O(n)" },
+  { problem: "Monte Carlo risk surface (>10M samples)",                       path: "QPU",       backend: "AWS Braket Rigetti Ankaa-2",  reason: "Quantum sampling speedup" },
+];
+
 function QuantumFoundry() {
   const [nodeStates, setNodeStates] = useState<string[]>(() => Array(54).fill("|0⟩"));
   const [factoryData, setFactoryData] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
-  const [processResult, setProcessResult] = useState<string | null>(null);
+  const [processResult, setProcessResult] = useState<{ msg: string; ok: boolean } | null>(null);
   const [cycleCount, setCycleCount] = useState(0);
+  const [activeAxiom, setActiveAxiom] = useState(0);
+  const [errorMitigationTick, setErrorMitigationTick] = useState(0);
 
   useEffect(() => {
     const QSTATES = ["|0⟩", "|1⟩", "|ψ⟩", "ENT", "CLK"];
     const t = setInterval(() => {
       setNodeStates(prev => prev.map(s => Math.random() < 0.22 ? QSTATES[Math.floor(Math.random() * QSTATES.length)] : s));
       setCycleCount(c => c + 1);
+      setErrorMitigationTick(c => c + 1);
     }, 480);
-    return () => clearInterval(t);
+    const ax = setInterval(() => setActiveAxiom(a => (a + 1) % AXIOM_LIBRARY.length), 2200);
+    return () => { clearInterval(t); clearInterval(ax); };
   }, []);
 
   const loadFactory = async () => {
@@ -921,7 +949,8 @@ function QuantumFoundry() {
     try {
       const r = await fetch("/api/quantum/process-feedstock", { method: "POST" });
       const d = await r.json();
-      setProcessResult(d.message ?? d.status);
+      const ok = d.status === "PROCESSED";
+      setProcessResult({ msg: d.message ?? d.status, ok });
       await loadFactory();
     } catch { /* graceful */ }
     setProcessing(false);
@@ -955,21 +984,29 @@ function QuantumFoundry() {
   ];
   const qaoa = factoryData?.quantumArchitecture?.qaoa ?? { depth: 12, convergence: 94.7, iterations: 0 };
 
+  // Error mitigation — simulated stabilizer syndrome metrics
+  const errorRate = 0.0018 + Math.sin(errorMitigationTick * 0.07) * 0.0004;
+  const logicalErrorRate = errorRate * errorRate * 900;
+  const syndromeChecks = 900 + (errorMitigationTick % 17) * 3;
+
   return (
     <div style={{ overflowY: "auto", flex: 1, paddingBottom: 24 }}>
 
-      {/* Factory Online Banner */}
-      <div style={{ marginBottom: 16, padding: "12px 18px", border: "1px solid #D4AF3730", background: "#D4AF3706", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      {/* ── FACTORY ONLINE BANNER ── */}
+      <div style={{ marginBottom: 14, padding: "12px 18px", border: "1px solid #D4AF3730", background: "#D4AF3706", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: GREEN, boxShadow: "0 0 8px 3px #34D39966" }} />
-          <span style={{ fontFamily: MONO, fontSize: 9, color: GREEN, letterSpacing: "0.2em", fontWeight: 700 }}>FACTORY ONLINE — AWAITING FEEDSTOCK</span>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: GREEN, boxShadow: "0 0 8px 3px #34D39966", animation: "pulse 2s infinite" }} />
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: GREEN, letterSpacing: "0.2em", fontWeight: 700 }}>FACTORY ONLINE — AUTONOMOUS SOVEREIGN OPERATION</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.12em", marginTop: 2 }}>QUANTUM-FAKE EMULATION MODE · TETHER-BUBBLE v2.0 · NIST SP 800-53 · SOC 2 TYPE II · ISO 27001</div>
+          </div>
         </div>
         <div style={{ display: "flex", gap: 20 }}>
           {[
             { label: "CYCLES", val: (factoryData?.factory?.cycleCount ?? cycleCount).toLocaleString() },
             { label: "PROCESSED", val: String(factoryData?.factory?.processedCount ?? 0) },
             { label: "UPTIME", val: factoryData ? `${Math.floor(factoryData.factory.uptimeMs / 60000)}m` : "—" },
-            { label: "MODE", val: "QUANTUM-FAKE" },
+            { label: "THROUGHPUT", val: `${factoryData?.factory?.throughputPerHour ?? 0}/hr` },
           ].map(m => (
             <div key={m.label}>
               <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em" }}>{m.label}</div>
@@ -979,21 +1016,24 @@ function QuantumFoundry() {
         </div>
       </div>
 
-      {/* 5-Stage Factory Pipeline */}
-      <div style={{ marginBottom: 16 }}>
+      {/* ── 5-STAGE FACTORY PIPELINE ── */}
+      <div style={{ marginBottom: 14 }}>
         <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 10 }}>AUTONOMOUS QUANTUM PARADOX RESOLUTION FACTORY — 5-STAGE PIPELINE</div>
         <div style={{ display: "flex", gap: 0 }}>
           {([
-            { num: "01", label: "RAW FEEDSTOCK", sub: "Unresolved entropy\nB2B conflicts\nRaw paradox streams", val: String(stages.feedstock?.count ?? "—"), color: AMBER, icon: "⊗" },
-            { num: "02", label: "THE FOUNDRY", sub: "54-node quantum-fake\nInference kernel\nSuperposition mapping", val: "54", color: BLUE, icon: "⬡" },
-            { num: "03", label: "THE TEMPLATES", sub: "88 paradox axioms\nTETHER-BUBBLE v2.0\nProprietary KB", val: "88", color: PURPLE, icon: "◈" },
-            { num: "04", label: "THE OUTPUT", sub: "Validated solutions\nBlockchain-ready\nIntellectual assets", val: String(stages.output?.count ?? "—"), color: GREEN, icon: "◆" },
-            { num: "05", label: "THE MARKET", sub: "Solvex Marketplace\nAuto-integration\nVault locked", val: String(stages.market?.count ?? "—"), color: GOLD, icon: "✦" },
+            { num: "01", label: "RAW FEEDSTOCK", sub: "Unresolved entropy\nB2B conflicts\nRaw paradox streams", val: String(stages.feedstock?.count ?? "—"), color: AMBER, icon: "⊗", status: stages.feedstock?.status ?? "INGESTING" },
+            { num: "02", label: "THE FOUNDRY",   sub: "54-node quantum-fake\nInference kernel\nSuperposition mapping", val: "54", color: BLUE, icon: "⬡", status: "ACTIVE" },
+            { num: "03", label: "THE TEMPLATES", sub: "88 paradox axioms\nTETHER-BUBBLE v2.0\nProprietary KB", val: "88", color: PURPLE, icon: "◈", status: "LOADED" },
+            { num: "04", label: "THE OUTPUT",    sub: "Validated solutions\nBlockchain-ready\nIntellectual assets", val: String(stages.output?.count ?? "—"), color: GREEN, icon: "◆", status: stages.output?.status ?? "SYNTHESIZING" },
+            { num: "05", label: "THE MARKET",    sub: "Solvex Marketplace\nAuto-integration\nVault locked", val: String(stages.market?.count ?? "—"), color: GOLD, icon: "✦", status: stages.market?.status ?? "LIVE" },
           ] as const).map((stage, i, arr) => (
             <div key={stage.num} style={{ flex: 1, display: "flex", alignItems: "stretch" }}>
               <div style={{ flex: 1, padding: "12px 10px", border: `1px solid ${stage.color}25`, background: `${stage.color}06`, position: "relative" }}>
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${stage.color}, transparent)` }} />
-                <div style={{ fontFamily: MONO, fontSize: 7, color: stage.color, letterSpacing: "0.12em", marginBottom: 4, fontWeight: 700 }}>{stage.num} · {stage.icon}</div>
+                <div style={{ fontFamily: MONO, fontSize: 7, color: stage.color, letterSpacing: "0.12em", marginBottom: 4, fontWeight: 700, display: "flex", justifyContent: "space-between" }}>
+                  <span>{stage.num} · {stage.icon}</span>
+                  <span style={{ fontSize: 6, opacity: 0.7 }}>{stage.status}</span>
+                </div>
                 <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: "#E8EAF0", marginBottom: 4 }}>{stage.label}</div>
                 <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 8 }}>{stage.sub}</div>
                 <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 800, color: stage.color }}>{stage.val}</div>
@@ -1006,8 +1046,8 @@ function QuantumFoundry() {
         </div>
       </div>
 
-      {/* Quantum Inference Kernel + QAOA */}
-      <div style={{ marginBottom: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      {/* ── ROW: 54-NODE KERNEL + QAOA ENGINE ── */}
+      <div style={{ marginBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
         {/* 54-Node Superposition Array */}
         <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
@@ -1030,7 +1070,7 @@ function QuantumFoundry() {
               }}>{s}</div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
             {([
               { s: "|0⟩", label: "Ground",    c: "#1E2840" },
               { s: "|1⟩", label: "Excited",   c: BLUE },
@@ -1044,39 +1084,107 @@ function QuantumFoundry() {
               </div>
             ))}
           </div>
+          <div style={{ padding: "8px 10px", background: "#0B0E1A", border: "1px solid #A78BFA20" }}>
+            <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginBottom: 3 }}>ENTANGLEMENT PROTOCOL — LAMPORT ORDERED</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: "#8B94B0", lineHeight: 1.6 }}>
+              Resolution in one branch instantaneously updates parity of all connected synaptic loops. Non-local correlation validated across all 54 nodes. Epoch: L-{(Date.now() % 1e9).toString(16).toUpperCase()}
+            </div>
+          </div>
         </div>
 
         {/* QAOA Heuristic Engine */}
         <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
           <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>QAOA HEURISTIC ENGINE</div>
-          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: PURPLE, marginBottom: 14 }}>QUANTUM-INSPIRED SOLVER — DEPTH {qaoa.depth}</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: PURPLE, marginBottom: 12 }}>QUANTUM-INSPIRED SOLVER — DEPTH {qaoa.depth}</div>
           {([
-            { label: "CIRCUIT DEPTH", val: `p = ${qaoa.depth} LAYERS`, pct: 0.6 },
-            { label: "MIXER OPERATOR", val: "X-ROTATION ⊗ Rz(θ)", pct: 1.0 },
-            { label: "CONVERGENCE", val: `${Number(qaoa.convergence).toFixed(1)}%`, pct: Number(qaoa.convergence) / 100 },
-            { label: "ITERATIONS", val: `${qaoa.iterations} / 200`, pct: qaoa.iterations / 200 },
+            { label: "CIRCUIT DEPTH", val: `p = ${qaoa.depth} LAYERS`, pct: 0.6, c: PURPLE },
+            { label: "MIXER OPERATOR", val: "X-ROTATION ⊗ Rz(θ)", pct: 1.0, c: PURPLE },
+            { label: "CONVERGENCE", val: `${Number(qaoa.convergence).toFixed(1)}%`, pct: Number(qaoa.convergence) / 100, c: GREEN },
+            { label: "ITERATIONS", val: `${qaoa.iterations} / 200`, pct: (qaoa.iterations || 0) / 200, c: BLUE },
           ]).map(m => (
             <div key={m.label} style={{ marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
                 <span style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.1em" }}>{m.label}</span>
-                <span style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: PURPLE }}>{m.val}</span>
+                <span style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: m.c }}>{m.val}</span>
               </div>
               <div style={{ height: 3, background: "#1A2035" }}>
-                <div style={{ height: "100%", width: `${m.pct * 100}%`, background: PURPLE, transition: "width 1s ease" }} />
+                <div style={{ height: "100%", width: `${Math.min(m.pct * 100, 100)}%`, background: m.c, transition: "width 1s ease" }} />
               </div>
             </div>
           ))}
-          <div style={{ marginTop: 12, padding: "10px", background: "#0B0E1A", border: "1px solid #A78BFA20" }}>
-            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, marginBottom: 4 }}>ENTANGLEMENT PROTOCOL</div>
-            <div style={{ fontFamily: MONO, fontSize: 7.5, color: "#8B94B0", lineHeight: 1.6 }}>
-              Resolution in one branch instantaneously updates parity of all connected synaptic loops. Non-local correlation validated across 54 nodes via Lamport ordering.
-            </div>
+          <div style={{ marginTop: 10, padding: "8px 10px", background: "#0B0E1A", border: "1px solid #A78BFA20" }}>
+            <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginBottom: 3 }}>ACTIVE AXIOM TEMPLATE — ROTATING</div>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: PURPLE, fontWeight: 700, marginBottom: 2 }}>{AXIOM_LIBRARY[activeAxiom].id} · {AXIOM_LIBRARY[activeAxiom].name}</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>Domain: {AXIOM_LIBRARY[activeAxiom].domain} · {AXIOM_LIBRARY[activeAxiom].status}</div>
           </div>
         </div>
       </div>
 
-      {/* PQ-Crypto + QPU Backends */}
-      <div style={{ marginBottom: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      {/* ── ROW: ERROR MITIGATION + HYBRID ROUTING ── */}
+      <div style={{ marginBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+        {/* Error Mitigation Layer */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>ERROR MITIGATION — DESIGN PARAMETER</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: AMBER, marginBottom: 12 }}>STABILIZER CODE · SURFACE CODE LAYER</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+            {([
+              { label: "PHYSICAL ERROR RATE", val: errorRate.toFixed(4), unit: "per gate", color: AMBER },
+              { label: "LOGICAL ERROR RATE", val: logicalErrorRate.toFixed(6), unit: "per cycle", color: GREEN },
+              { label: "SYNDROME CHECKS", val: syndromeChecks.toLocaleString(), unit: "stabilizers", color: BLUE },
+              { label: "LOGICAL QUBITS", val: "105", unit: "fault-tolerant", color: PURPLE },
+            ]).map(m => (
+              <div key={m.label} style={{ padding: "8px 10px", background: "#0B0E1A", border: `1px solid ${m.color}18` }}>
+                <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, letterSpacing: "0.1em", marginBottom: 3 }}>{m.label}</div>
+                <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 800, color: m.color }}>{m.val}</div>
+                <div style={{ fontFamily: MONO, fontSize: 6, color: DIM }}>{m.unit}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>NOISE-RESISTANT MODE</span>
+              <span style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>ERROR-CORRECTED MODE</span>
+            </div>
+            <div style={{ height: 6, background: "#1A2035", position: "relative", borderRadius: 1 }}>
+              <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "72%", background: `linear-gradient(90deg, ${AMBER}, ${GREEN})` }} />
+              <div style={{ position: "absolute", left: "72%", top: -3, fontFamily: MONO, fontSize: 7, color: GREEN, transform: "translateX(-50%)" }}>◆</div>
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginTop: 4, textAlign: "center" }}>WILLOW-CLASS THRESHOLD ACHIEVED — Q3 2026 TARGET: FULL LOGICAL STABILITY</div>
+          </div>
+          <div style={{ padding: "6px 10px", background: "#D4AF3708", border: "1px solid #D4AF3720" }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: GOLD, lineHeight: 1.6 }}>
+              Google Willow ref: 105 logical / 900 physical qubits · Below error threshold. Transitioning from raw qubit counting → logical qubit stability paradigm.
+            </div>
+          </div>
+        </div>
+
+        {/* Hybrid Workflow Routing Matrix */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>HYBRID WORKFLOW ROUTER</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: BLUE, marginBottom: 12 }}>CLASSICAL ↔ QPU DISPATCH MATRIX</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {HYBRID_ROUTING.map((r, i) => (
+              <div key={i} style={{ padding: "6px 10px", background: "#0B0E1A", border: `1px solid ${r.path === "QPU" ? BLUE : GREEN}18`, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <div style={{
+                  flexShrink: 0, padding: "2px 5px", fontFamily: MONO, fontSize: 6, fontWeight: 700, letterSpacing: "0.08em",
+                  background: r.path === "QPU" ? "#60A5FA18" : "#34D39918",
+                  color: r.path === "QPU" ? BLUE : GREEN,
+                  border: `1px solid ${r.path === "QPU" ? BLUE : GREEN}40`,
+                  marginTop: 1,
+                }}>{r.path}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: "#8B94B0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: 2 }}>{r.problem}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 6, color: DIM }}>{r.backend} · {r.reason}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── ROW: PQ-CRYPTO + QPU BACKENDS ── */}
+      <div style={{ marginBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
 
         {/* Post-Quantum Cryptography */}
         <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
@@ -1126,13 +1234,48 @@ function QuantumFoundry() {
             </div>
             <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>105 logical qubits · 900 physical qubits</div>
             <div style={{ fontFamily: MONO, fontSize: 7, color: "#8B94B0", marginTop: 4, lineHeight: 1.5 }}>
-              Below error threshold — logical qubit stability demonstrated. Shifting from raw qubit counting to logical qubit stability. Target: error-corrected mode Q3 2026.
+              Below error threshold — logical qubit stability demonstrated. Target: error-corrected mode Q3 2026.
             </div>
           </div>
         </div>
       </div>
 
-      {/* Feedstock Queue + Process Controls */}
+      {/* ── 88-AXIOM TEMPLATE LIBRARY ── */}
+      <div style={{ marginBottom: 14, border: "1px solid #A78BFA20", padding: "14px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>PROPRIETARY KNOWLEDGE BASE — TETHER-BUBBLE v2.0</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: PURPLE }}>88-AXIOM TEMPLATE LIBRARY — SOLVED PARADOX STATES</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>ACTIVE TEMPLATE</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: PURPLE }}>{AXIOM_LIBRARY[activeAxiom].id}</div>
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 3, marginBottom: 10 }}>
+          {Array.from({ length: 88 }, (_, i) => {
+            const isActive = i === activeAxiom;
+            const isKnown = i < AXIOM_LIBRARY.length;
+            return (
+              <div key={i} style={{
+                padding: "3px 2px", textAlign: "center",
+                background: isActive ? "#A78BFA22" : isKnown ? "#A78BFA08" : "#0B0E1A",
+                border: `1px solid ${isActive ? PURPLE : isKnown ? "#A78BFA30" : "#1A2035"}`,
+                fontFamily: MONO, fontSize: 6, color: isActive ? PURPLE : isKnown ? "#8B94B0" : DIM,
+                fontWeight: isActive ? 800 : 400,
+                transition: "all 0.3s ease",
+              }}>AX-{String(i + 1).padStart(3, "0")}</div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["TOPOLOGY", "PROBABILITY", "CAUSAL", "LOGIC", "GEOMETRY", "FUZZY", "IDENTITY", "INFORMATION", "BEHAVIORAL", "CALCULUS", "QUANTUM", "TEMPORAL"].map(d => (
+            <div key={d} style={{ padding: "2px 7px", background: "#A78BFA10", border: "1px solid #A78BFA30", fontFamily: MONO, fontSize: 6, color: PURPLE }}>{d}</div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FEEDSTOCK QUEUE + PROCESS CONTROLS ── */}
       <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
           <div>
@@ -1143,18 +1286,18 @@ function QuantumFoundry() {
             onClick={handleProcess}
             disabled={processing}
             style={{
-              padding: "10px 18px",
+              padding: "10px 20px",
               background: processing ? "transparent" : "linear-gradient(135deg, #D4AF37, #B8860B)",
               border: processing ? "1px solid #D4AF37" : "none",
               color: processing ? GOLD : "#05080F",
               fontFamily: MONO, fontSize: 8, fontWeight: 800, letterSpacing: "0.15em",
               cursor: processing ? "not-allowed" : "pointer",
-            }}>{processing ? "⟳ PROCESSING..." : "⊕ PROCESS FEEDSTOCK"}</button>
+            }}>{processing ? "⟳ QUANTUM INFERENCE RUNNING..." : "⊕ PROCESS FEEDSTOCK"}</button>
         </div>
 
         {processResult && (
-          <div style={{ marginBottom: 12, padding: "8px 12px", background: "#34D39910", border: "1px solid #34D39940" }}>
-            <div style={{ fontFamily: MONO, fontSize: 8, color: GREEN }}>{processResult}</div>
+          <div style={{ marginBottom: 12, padding: "8px 12px", background: processResult.ok ? "#34D39910" : "#F59E0B10", border: `1px solid ${processResult.ok ? "#34D39940" : "#F59E0B40"}` }}>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: processResult.ok ? GREEN : AMBER }}>{processResult.msg}</div>
           </div>
         )}
 
@@ -1162,7 +1305,7 @@ function QuantumFoundry() {
           <div>
             <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em", marginBottom: 8 }}>RECENT FEEDSTOCK</div>
             {(factoryData?.recentFeedstock ?? []).length === 0
-              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8 }}>Queue empty</div>
+              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8, border: "1px dashed #1A2035" }}>Queue empty — Post bounties to generate feedstock</div>
               : (factoryData?.recentFeedstock ?? []).map((f: any, i: number) => (
                 <div key={f.id ?? i} style={{ padding: "7px 10px", marginBottom: 3, background: "#0B0E1A", border: "1px solid #1A2035" }}>
                   <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: AMBER, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.title}</div>
@@ -1173,11 +1316,13 @@ function QuantumFoundry() {
           <div>
             <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em", marginBottom: 8 }}>RECENT OUTPUT (VALIDATED ASSETS)</div>
             {(factoryData?.recentOutput ?? []).length === 0
-              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8 }}>No assets synthesized yet</div>
+              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8, border: "1px dashed #1A2035" }}>No assets synthesized yet</div>
               : (factoryData?.recentOutput ?? []).map((o: any, i: number) => (
                 <div key={o.id ?? i} style={{ padding: "7px 10px", marginBottom: 3, background: "#0B0E1A", border: "1px solid #34D39920" }}>
-                  <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: GREEN, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.title}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginTop: 2 }}>status: {o.status ?? "verified"}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: GREEN, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {String(o.content ?? "").substring(0, 60)}{(o.content ?? "").length > 60 ? "…" : ""}
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginTop: 2 }}>status: {o.status ?? "verified"} · id: {o.id}</div>
                 </div>
               ))}
           </div>
