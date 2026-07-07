@@ -21,6 +21,7 @@ import {
   problemsTable,
   solutionsTable,
   auditLogTable,
+  daisyBrainTable,
 } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -91,7 +92,7 @@ async function synthesizeParadox(
   snap: ReturnType<typeof tetherSnapshot>,
   problem: { id: number; title: string; category: string; paymentOffer: string; createdAt: Date },
   entropy: number,
-): Promise<{ id: number; content: string; collapseHash: string }> {
+): Promise<{ id: number; content: string; collapseHash: string; resolution: import("./heuristic-kernel").ResolutionVector }> {
   const lamport = tickLamport();
   const collapseHash = crypto
     .createHash("sha256")
@@ -144,7 +145,7 @@ async function synthesizeParadox(
 
   await db.update(problemsTable).set({ status: "solution_submitted" }).where(eq(problemsTable.id, problem.id));
 
-  return { id: solution.id, content, collapseHash };
+  return { id: solution.id, content, collapseHash, resolution };
 }
 
 // ── Immutable ledger commit ────────────────────────────────────────────────────
@@ -154,6 +155,9 @@ async function finalizeSolution(
   solutionId: number,
   collapseHash: string,
   entropy: number,
+  resolution: import("./heuristic-kernel").ResolutionVector,
+  problem: { title: string; category: string; paymentOffer: string },
+  snap: ReturnType<typeof tetherSnapshot>,
 ): Promise<void> {
   const lamport = tickLamport();
   const accretion = getAccretionStatus();
@@ -171,6 +175,29 @@ async function finalizeSolution(
   tetherWrite(TETHER_SLOTS.ENTROPY_PPM, Math.round(entropy * 1_000_000));
   tetherWrite(TETHER_SLOTS.LAMPORT, lamport);
 
+  // Write to dAIsy Brain — proprietary resolution vector, never exposed via public API
+  // The HOW stays here. The marketplace only receives the sanitized proof bundle.
+  await db.insert(daisyBrainTable).values({
+    brainId: nanoid(),
+    paradoxId: problemId,
+    paradoxTitle: problem.title,
+    paradoxCategory: problem.category,
+    paradoxPaymentOffer: problem.paymentOffer,
+    resolutionType: resolution.solutionType,
+    executionPath: JSON.stringify(resolution.executionPath),
+    directive: resolution.directive,
+    rationale: resolution.rationale,
+    confidence: resolution.confidence.toFixed(2),
+    lamportWeight: resolution.lamportWeight,
+    collapseHash,
+    lamport,
+    entropy: entropy.toFixed(6),
+    nodeId,
+    consensusRound: snap.consensusRound,
+    intentId: intent.intentId,
+    intentStatus: intent.status,
+  }).onConflictDoNothing();
+
   await db.insert(auditLogTable).values({
     id: nanoid(),
     eventType: "FORCE_COLLAPSE",
@@ -186,16 +213,17 @@ async function finalizeSolution(
       intentId: intent.intentId,
       intentStatus: intent.status,
       signerInterface: "AWAITING_HARDWARE_HOOK",
-      solanaIntent: intent.solanaIntent,
-      // Tether slot snapshot at commit time
+      resolutionType: resolution.solutionType,   // safe to audit-log
+      brainWritten: true,                         // confirms brain entry created
       tetherState: { state: "FORCE_COLLAPSE", entropy_ppm: Math.round(entropy * 1_000_000), lamport },
     }),
     status: "success",
   });
 
   logger.info(
-    { nodeId, problemId, solutionId, collapseHash, entropy: entropy.toFixed(4), lamport, intentId: intent.intentId },
-    "FORCE_COLLAPSE: immutable ledger commit + intent emitted — awaiting hardware signer",
+    { nodeId, problemId, solutionId, collapseHash, entropy: entropy.toFixed(4), lamport,
+      intentId: intent.intentId, resolutionType: resolution.solutionType, brainWritten: true },
+    "FORCE_COLLAPSE: brain updated + ledger committed + intent emitted — awaiting hardware signer",
   );
 }
 
@@ -241,7 +269,16 @@ async function processSynapticEntropy(nodeId: number): Promise<void> {
     createdAt: new Date(oldest.createdAt),
   }, entropy);
 
-  await finalizeSolution(nodeId, oldest.id, solution.id, solution.collapseHash, entropy);
+  await finalizeSolution(
+    nodeId,
+    oldest.id,
+    solution.id,
+    solution.collapseHash,
+    entropy,
+    solution.resolution,
+    { title: oldest.title, category: oldest.category, paymentOffer: oldest.paymentOffer ?? "0" },
+    tether,
+  );
 
   state.collapseCount++;
   state.lastCollapseAt = Date.now();

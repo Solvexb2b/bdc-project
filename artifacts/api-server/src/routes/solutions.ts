@@ -4,6 +4,7 @@ import { solutionsTable, problemsTable, earningsTable, notificationsTable } from
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { validateAccretionAlignment } from "../lib/accretion";
+import { applyBlackBox } from "../lib/blackbox";
 
 const router = Router();
 
@@ -16,7 +17,6 @@ router.post("/solutions", async (req, res) => {
     const [problem] = await db.select().from(problemsTable).where(eq(problemsTable.id, problemId)).limit(1);
     if (!problem) { res.status(404).json({ error: "Problem not found" }); return; }
 
-    // Pillar 3: Accretion validation — reject if below $23T/177% CAGR floor
     if (estimatedMarketImpactUSD != null) {
       const accretion = validateAccretionAlignment(Number(estimatedMarketImpactUSD));
       if (!accretion.valid) {
@@ -37,11 +37,14 @@ router.post("/solutions", async (req, res) => {
   }
 });
 
+// BLACK BOX INTERCEPTOR — system-synthesized solutions (solverId="0") are sanitized
+// before delivery. Proprietary heuristic kernel data stays in dAIsy Brain.
 router.get("/solutions/problem/:problemId", async (req, res) => {
   try {
     const problemId = parseInt(req.params.problemId);
-    const solutions = await db.select().from(solutionsTable).where(eq(solutionsTable.problemId, problemId));
-    res.json(solutions);
+    const raw = await db.select().from(solutionsTable).where(eq(solutionsTable.problemId, problemId));
+    const sanitized = await applyBlackBox(raw);
+    res.json(sanitized);
   } catch (err) {
     req.log.error({ err }, "get solutions error");
     res.status(500).json({ error: "Internal server error" });

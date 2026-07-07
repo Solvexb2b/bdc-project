@@ -9,3 +9,4 @@ export * from "./solutions";
 export * from "./escrow";
 export * from "./crawler";
 export * from "./social";
+export * from "./brain";
