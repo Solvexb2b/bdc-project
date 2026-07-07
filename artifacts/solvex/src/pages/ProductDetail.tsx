@@ -16,12 +16,20 @@ const SERIF: React.CSSProperties = { fontFamily: "'Playfair Display', serif" };
 
 const CURRENCIES = [
   { key: "card", label: "CARD",  icon: "💳" },
-  { key: "eth",  label: "ETH",   icon: "Ξ" },
-  { key: "usdc", label: "USDC",  icon: "$" },
-  { key: "btc",  label: "BTC",   icon: "₿" },
+  { key: "eth",  label: "ETH",   icon: "Ξ"  },
+  { key: "base", label: "BASE",  icon: "🔵" },
+  { key: "usdc", label: "USDC",  icon: "$"  },
+  { key: "sol",  label: "SOL",   icon: "◎"  },
 ] as const;
 
-type Currency = "card" | "eth" | "usdc" | "btc";
+type Currency = "card" | "eth" | "base" | "usdc" | "sol";
+
+const QR_IMAGES: Partial<Record<Currency, string>> = {
+  eth:  "/qr-eth.png",
+  base: "/qr-base.png",
+  usdc: "/qr-base.png",
+  sol:  "/qr-sol.png",
+};
 
 interface CryptoPaymentInfo {
   orderId: string;
@@ -110,8 +118,9 @@ export default function ProductDetail() {
   const priceMap: Record<string, string | undefined> = {
     card: product.priceUsdc ? "$" + product.priceUsdc + " USD" : undefined,
     eth:  product.priceEth  ? product.priceEth  + " ETH"  : undefined,
+    base: product.priceEth  ? product.priceEth  + " ETH"  : undefined,
     usdc: product.priceUsdc ? product.priceUsdc + " USDC" : undefined,
-    btc:  product.priceBtc  ? product.priceBtc  + " BTC"  : undefined,
+    sol:  product.priceUsdc ? product.priceUsdc + " USDC" : undefined,
   };
 
   return (
@@ -248,9 +257,10 @@ export default function ProductDetail() {
                   </div>
                   <div style={{ ...MONO, fontSize: 9, color: "#5B6480" }}>
                     {currency === "card" && "Secure card payment via Stripe"}
-                    {currency === "eth"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD"}
-                    {currency === "usdc" && product.priceEth  && "≈ " + product.priceEth  + " ETH"}
-                    {currency === "btc"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD"}
+                    {currency === "eth"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD · Ethereum mainnet"}
+                    {currency === "base" && product.priceUsdc && "≈ $" + product.priceUsdc + " USD · Base L2 network"}
+                    {currency === "usdc" && "USD-pegged stablecoin · Base/Ethereum"}
+                    {currency === "sol"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD · Solana network"}
                   </div>
                 </div>
 
@@ -264,23 +274,51 @@ export default function ProductDetail() {
                 {/* Crypto payment details (after initiation) */}
                 {cryptoInfo && !txSubmitted && (
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.16em", color: col, marginBottom: 8 }}>SEND PAYMENT TO:</div>
+                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.16em", color: col, marginBottom: 8 }}>
+                      SEND {cryptoInfo.amount} {cryptoInfo.currency} TO:
+                    </div>
+
+                    {/* QR Code */}
+                    {QR_IMAGES[currency] && (
+                      <div style={{ textAlign: "center", marginBottom: 10 }}>
+                        <img
+                          src={QR_IMAGES[currency]}
+                          alt={`${cryptoInfo.currency} QR code`}
+                          style={{ width: 140, height: 140, border: "1px solid #1A2035", display: "inline-block" }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Address box */}
                     <div style={{ background: "#0A0D18", border: "1px solid #1A2035", padding: "10px", marginBottom: 8 }}>
-                      <div style={{ ...MONO, fontSize: 9, color: "#FFFFFF", wordBreak: "break-all", marginBottom: 6 }}>{cryptoInfo.walletAddress}</div>
+                      <div style={{ ...MONO, fontSize: 8, color: "#FFFFFF", wordBreak: "break-all", marginBottom: 6, lineHeight: 1.5 }}>
+                        {cryptoInfo.walletAddress}
+                      </div>
                       <button onClick={() => copyToClipboard(cryptoInfo.walletAddress)} style={{
-                        background: "transparent", border: "1px solid #1A2035", color: "#5B6480",
-                        ...MONO, fontSize: 8, padding: "4px 8px", cursor: "pointer", letterSpacing: "0.12em",
+                        background: copied ? "rgba(52,211,153,0.1)" : "transparent",
+                        border: "1px solid " + (copied ? "rgba(52,211,153,0.4)" : "#1A2035"),
+                        color: copied ? "#34D399" : "#5B6480",
+                        ...MONO, fontSize: 8, padding: "4px 10px", cursor: "pointer", letterSpacing: "0.12em",
                       }}>{copied ? "✓ COPIED" : "COPY ADDRESS"}</button>
                     </div>
-                    <div style={{ ...MONO, fontSize: 9, color: "#D4AF37", marginBottom: 6 }}>
+
+                    <div style={{ ...MONO, fontSize: 9, color: "#D4AF37", marginBottom: 4 }}>
                       Amount: {cryptoInfo.amount} {cryptoInfo.currency}
                     </div>
                     <div style={{ ...MONO, fontSize: 8, color: "#5B6480", marginBottom: 10 }}>{cryptoInfo.rateNote}</div>
-                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.14em", color: "#3D4560", marginBottom: 6 }}>SUBMIT TX HASH AFTER SENDING:</div>
+
+                    {/* Order ID for reference */}
+                    <div style={{ ...MONO, fontSize: 8, color: "#3D4560", marginBottom: 10 }}>
+                      Order: {cryptoInfo.orderId}
+                    </div>
+
+                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.14em", color: "#3D4560", marginBottom: 6 }}>
+                      PASTE TX HASH AFTER SENDING:
+                    </div>
                     <input
                       value={txHash}
                       onChange={e => setTxHash(e.target.value)}
-                      placeholder="0x..."
+                      placeholder={currency === "sol" ? "your-solana-tx-signature..." : "0x..."}
                       style={{
                         width: "100%", background: "#0A0D18", border: "1px solid #1A2035",
                         color: "#FFFFFF", ...MONO, fontSize: 9, padding: "8px",

@@ -6,27 +6,15 @@ import { nanoid } from "nanoid";
 
 const router = Router();
 
-const CRYPTO_ADDRESSES = {
-  eth: process.env.ETH_WALLET_ADDRESS ?? "",
+const CRYPTO_ADDRESSES: Record<string, string> = {
+  eth:  process.env.ETH_WALLET_ADDRESS  ?? "",
   usdc: process.env.USDC_WALLET_ADDRESS ?? process.env.ETH_WALLET_ADDRESS ?? "",
-  btc: process.env.BTC_WALLET_ADDRESS ?? "",
+  base: process.env.BASE_WALLET_ADDRESS ?? process.env.ETH_WALLET_ADDRESS ?? "",
+  sol:  process.env.SOL_WALLET_ADDRESS  ?? "",
+  btc:  process.env.BTC_WALLET_ADDRESS  ?? "",
 };
 
-const CRYPTO_RATES: Record<string, number> = {
-  eth: parseFloat(process.env.ETH_PRICE_USD ?? "3500"),
-  usdc: 1,
-  btc: parseFloat(process.env.BTC_PRICE_USD ?? "65000"),
-};
-
-function usdToCrypto(usd: number, currency: string): string {
-  const rate = CRYPTO_RATES[currency] ?? 1;
-  const amount = usd / rate;
-  return currency === "usdc"
-    ? amount.toFixed(2)
-    : currency === "btc"
-      ? amount.toFixed(8)
-      : amount.toFixed(6);
-}
+const VALID_CURRENCIES = ["eth", "usdc", "base", "sol", "btc"];
 
 router.post("/crypto/payment-intent", async (req: any, res) => {
   try {
@@ -34,11 +22,11 @@ router.post("/crypto/payment-intent", async (req: any, res) => {
     if (!productId || !currency) { res.status(400).json({ error: "productId and currency required" }); return; }
 
     const curr = (currency as string).toLowerCase();
-    if (!["eth", "usdc", "btc"].includes(curr)) {
-      res.status(400).json({ error: "currency must be eth, usdc, or btc" }); return;
+    if (!VALID_CURRENCIES.includes(curr)) {
+      res.status(400).json({ error: `currency must be one of: ${VALID_CURRENCIES.join(", ")}` }); return;
     }
 
-    const walletAddress = CRYPTO_ADDRESSES[curr as keyof typeof CRYPTO_ADDRESSES];
+    const walletAddress = CRYPTO_ADDRESSES[curr];
     if (!walletAddress) {
       res.status(503).json({
         error: `${curr.toUpperCase()} wallet not configured`,
@@ -50,11 +38,12 @@ router.post("/crypto/payment-intent", async (req: any, res) => {
     if (!product) { res.status(404).json({ error: "Product not found" }); return; }
 
     const usdAmount = parseFloat(product.priceUsdc);
-    const cryptoAmount = curr === "eth"
+    // ETH and BASE share the same price, USDC and SOL use USDC equivalent
+    const cryptoAmount = (curr === "eth" || curr === "base")
       ? product.priceEth
       : curr === "btc"
         ? product.priceBtc
-        : product.priceUsdc;
+        : product.priceUsdc; // usdc, sol
     const userId = (req.session as any)?.userId ?? "1";
     const orderId = nanoid();
 
@@ -81,7 +70,7 @@ router.post("/crypto/payment-intent", async (req: any, res) => {
         "Payment is typically confirmed within 1-3 network confirmations",
         "Your license will be delivered once payment is verified",
       ],
-      rateNote: curr === "usdc" ? "1:1 USD peg" : `Rate used: 1 ${curr.toUpperCase()} = $${CRYPTO_RATES[curr].toLocaleString()} USD`,
+      rateNote: (curr === "usdc" || curr === "sol") ? "1:1 USD peg (USDC equivalent)" : `≈ $${usdAmount.toLocaleString()} USD`,
     });
   } catch (err: any) {
     req.log.error({ err }, "Crypto payment intent error");
