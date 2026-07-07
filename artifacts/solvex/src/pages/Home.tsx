@@ -57,7 +57,7 @@ function GlassBoxDiagram() {
             <div style={{ margin: "16px 0", border: "1px solid #D4AF37", padding: 20, background: "#05080F" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: "0.2em", color: "#D4AF37" }}>
-                  BLACK BOX — 53-PARADOX CORE
+                  BLACK BOX — 59-PARADOX CORE
                 </div>
                 <div style={{
                   width: 10, height: 10, borderRadius: "50%", background: "#D4AF37",
@@ -70,7 +70,7 @@ function GlassBoxDiagram() {
                 <div>● Chamber II: 10 Classical ██████████</div>
                 <div>● Chamber III: 15 Existential ███████</div>
                 <div>● Chamber IV: 10 Material ██████████</div>
-                <div>● Chamber V: 5 Universal ████████████</div>
+                <div>● Chamber V: 11 Transcendent ████████</div>
               </div>
               <div style={{ marginTop: 10, padding: "6px 10px", border: "1px solid rgba(212,175,55,0.15)", background: "rgba(212,175,55,0.04)" }}>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#D4AF37", letterSpacing: "0.12em" }}>
@@ -112,8 +112,8 @@ function GlassBoxDiagram() {
 export default function Home() {
   const [count, setCount] = useState(0);
   useEffect(() => {
-    if (count < 53) {
-      const t = setTimeout(() => setCount(c => c + 1), 30);
+    if (count < 59) {
+      const t = setTimeout(() => setCount(c => c + 1), 20);
       return () => clearTimeout(t);
     }
   }, [count]);
@@ -196,11 +196,11 @@ export default function Home() {
           <p style={{
             fontSize: 17, color: "#7B869A", maxWidth: 640, lineHeight: 1.65, marginBottom: 36,
           }}>
-            The dAIsy haMINJA Sovereign AI Brain operates on a deterministic foundation of 53 unique, solved paradoxes. Complete environmental observability. Absolute intellectual property protection. Trust without disclosure.
+            The dAIsy haMINJA Sovereign AI Brain operates on a deterministic foundation of 59 unique, solved paradoxes across 5 Chambers. 105 resolved solutions. Complete environmental observability. Absolute intellectual property protection. Trust without disclosure.
           </p>
 
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
-            {["🔐 ZK-SNARK PROVEN", "⚖️ OSFI B-13 COMPLIANT", "🏦 FINTRAC APPROVED", "🛡️ PIPEDA SOVEREIGN", "🧠 53-PARADOX ENGINE"].map(s => (
+            {["🔐 ZK-SNARK PROVEN", "⚖️ OSFI B-13 COMPLIANT", "🏦 FINTRAC APPROVED", "🛡️ PIPEDA SOVEREIGN", "🧠 59-PARADOX ENGINE"].map(s => (
               <div key={s} style={{
                 fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: "0.1em",
                 color: "#9BA3B5", background: "rgba(212,175,55,0.06)",
@@ -251,7 +251,7 @@ export default function Home() {
         {/* 5 Chambers */}
         <div style={{ marginBottom: 64 }}>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.2em", color: "#5B6480", marginBottom: 8 }}>
-            53-PARADOX ENGINE
+            59-PARADOX ENGINE · 105 SOLUTIONS
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#FFFFFF", marginBottom: 24 }}>
             Five Chambers of Logic
