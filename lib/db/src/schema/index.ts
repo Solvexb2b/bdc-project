@@ -13,3 +13,5 @@ export * from "./brain";
 export * from "./vault-bridge";
 export * from "./delivery";
 export * from "./challenge-hub";
+export * from "./conversations";
+export * from "./messages";

@@ -22,6 +22,7 @@ import kineticRouter from "./kinetic";
 import deliveryRouter from "./delivery";
 import challengesRouter from "./challenges";
 import quantumRouter from "./quantum";
+import openaiRouter from "./openai";
 
 const router: IRouter = Router();
 
@@ -48,5 +49,6 @@ router.use(kineticRouter);
 router.use(deliveryRouter);
 router.use(challengesRouter);
 router.use(quantumRouter);
+router.use(openaiRouter);
 
 export default router;
