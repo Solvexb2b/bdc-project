@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, deliveryArtifactsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, deliveryArtifactsTable, outreachLogTable } from "@workspace/db";
+import { eq, count, desc } from "drizzle-orm";
 import { generateArtifact, generateOutreach, autoConvert } from "../lib/artifact-engine";
 
 const router = Router();
@@ -156,6 +156,48 @@ router.post("/delivery/auto-convert", async (req, res) => {
     res.json({ success: true, ...result });
   } catch (err: any) {
     req.log.error({ err }, "delivery/auto-convert error");
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * GET /api/delivery/pipeline-stats
+ * Live stats for the delivery pipeline dashboard.
+ */
+router.get("/delivery/pipeline-stats", async (req, res) => {
+  try {
+    const [compiled] = await db.select({ count: count() }).from(deliveryArtifactsTable).where(eq(deliveryArtifactsTable.status, "COMPILED"));
+    const [delivered] = await db.select({ count: count() }).from(deliveryArtifactsTable).where(eq(deliveryArtifactsTable.status, "DELIVERED"));
+    const [verified] = await db.select({ count: count() }).from(deliveryArtifactsTable).where(eq(deliveryArtifactsTable.status, "VERIFIED"));
+    const [outreachTotal] = await db.select({ count: count() }).from(outreachLogTable);
+    const recent = await db
+      .select({
+        artifactId: deliveryArtifactsTable.artifactId,
+        productName: deliveryArtifactsTable.productName,
+        paradoxTitle: deliveryArtifactsTable.paradoxTitle,
+        resolutionType: deliveryArtifactsTable.resolutionType,
+        buyerInstitution: deliveryArtifactsTable.buyerInstitution,
+        buyerTier: deliveryArtifactsTable.buyerTier,
+        artifactSeal: deliveryArtifactsTable.artifactSeal,
+        status: deliveryArtifactsTable.status,
+        createdAt: deliveryArtifactsTable.createdAt,
+      })
+      .from(deliveryArtifactsTable)
+      .orderBy(desc(deliveryArtifactsTable.createdAt))
+      .limit(10);
+
+    res.json({
+      stats: {
+        compiled: Number(compiled?.count ?? 0),
+        delivered: Number(delivered?.count ?? 0),
+        verified: Number(verified?.count ?? 0),
+        outreach: Number(outreachTotal?.count ?? 0),
+        total: Number((compiled?.count ?? 0)) + Number((delivered?.count ?? 0)) + Number((verified?.count ?? 0)),
+      },
+      recent,
+    });
+  } catch (err: any) {
+    req.log.error({ err }, "delivery/pipeline-stats error");
     res.status(500).json({ error: err.message });
   }
 });
