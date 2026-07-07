@@ -69,12 +69,18 @@ export const PARADOXES: Paradox[] = [
   { id: 47, chamber: 4, name: "Temporal Entropy vs Deterministic Replay", description: "Captures sufficient entropy for security seeds while maintaining full deterministic replay for audit trails." },
   { id: 48, chamber: 4, name: "Byzantine Equivocation vs Finality Guarantee", description: "Detects and slashes equivocating validators while preserving one-slot finality for honest consensus participants." },
 
-  // ─── CHAMBER V: TRANSCENDENCE (49–53) ────────────────────────────────────
+  // ─── CHAMBER V: TRANSCENDENCE (49–59) ────────────────────────────────────
   { id: 49, chamber: 5, name: "Neural Inference Latency vs Privacy Budget", description: "Bounds differential privacy budget expenditure per inference while maintaining sub-50ms model response SLAs." },
   { id: 50, chamber: 5, name: "Pheromone Signal Decay vs Memory Persistence", description: "Calibrates pheromone half-life to allow stale route eviction while preserving critical long-term coordinate memory." },
   { id: 51, chamber: 5, name: "Sovereign Epoch Boundary vs Continuous Execution", description: "Enforces clean epoch transitions for ledger checkpointing without interrupting live transaction processing pipelines." },
   { id: 52, chamber: 5, name: "Proof-of-Sovereignty vs Decentralized Verification", description: "Proves sovereign execution authority to external verifiers without exposing internal kernel state or identity." },
-  { id: 53, chamber: 5, name: "Axiom Resolution vs Paradox Synthesis", description: "The terminal paradox: resolves all prior 52 paradoxes into a single unified sovereign execution axiom — the dAIsy haMINJA convergence proof." },
+  { id: 53, chamber: 5, name: "IRS-First Rule vs Operating Capital Release", description: "Sequences 21% corporate tax sequestration to EFTPS before any revenue is classified as operating capital." },
+  { id: 54, chamber: 5, name: "Outbound Fiduciary Autonomy vs Operator Sign-Off", description: "Balances autonomous B2B contract execution with mandatory operator authorization at high-value thresholds." },
+  { id: 55, chamber: 5, name: "ROI Pricing Dynamics vs Fixed Contract Anchoring", description: "Computes dynamic pricing as 22% of estimated ROI savings while maintaining floor/ceiling SLA constraints." },
+  { id: 56, chamber: 5, name: "NIST Gate Compliance vs Execution Throughput", description: "Enforces NIST SP 800-53 control verification continuously without degrading transaction pipeline frequency." },
+  { id: 57, chamber: 5, name: "Autonomous Sales Cadence vs Human Relationship Depth", description: "Calibrates autonomous outbound engagement velocity against relationship-depth requirements of enterprise B2B deals." },
+  { id: 58, chamber: 5, name: "Fiscal Audit Immutability vs State Mutability", description: "Writes Lamport-ordered audit milestones to an append-only ledger while allowing local state to evolve freely." },
+  { id: 59, chamber: 5, name: "Axiom Resolution vs Paradox Synthesis", description: "The terminal paradox: resolves all prior 58 paradoxes into a single unified sovereign execution axiom — the dAIsy haMINJA U.A.R.E.F.A.K.E. convergence proof." },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
@@ -98,7 +104,7 @@ export const CHAMBER_META = [
   { num: "II",  name: "MOTION & TIME", paradoxes: 10, symbol: "☸", desc: "Resolves causal drift in untrusted network environments", color: "#60A5FA" },
   { num: "III", name: "CHOICE & SELF", paradoxes: 15, symbol: "𓁙", desc: "Manages autonomous decision-making and agentic sovereignty", color: "#A78BFA" },
   { num: "IV",  name: "STRUCTURE",     paradoxes: 10, symbol: "⬢", desc: "Ensures hardware-level stability for bare-metal execution", color: "#34D399" },
-  { num: "V",   name: "TRANSCENDENCE", paradoxes: 5,  symbol: "👁", desc: "Final reconciliation of all data inputs into absolute output", color: "#F59E0B" },
+  { num: "V",   name: "TRANSCENDENCE", paradoxes: 11, symbol: "👁", desc: "Final reconciliation — IRS-First Rule, U.A.R.E.F.A.K.E. convergence, absolute sovereign output", color: "#F59E0B" },
 ];
 
 export function getChamberForParadox(id: number): typeof CHAMBER_META[number] {
