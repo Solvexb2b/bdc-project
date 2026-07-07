@@ -592,6 +592,7 @@ function SolutionsLayer() {
 interface LiveTelemetry {
   systemId: string;
   mode: string;
+  homeostasis: string;
   opsPerSec: number;
   heapUsedMB: string;
   heapTotalMB: string;
@@ -600,6 +601,8 @@ interface LiveTelemetry {
   rssMB: string;
   systemStatic: boolean;
   lamportTick: number;
+  physicalNodes: number;
+  logicalNodes: number;
   digest: string;
   nonce: number;
   timestamp: number;
@@ -652,7 +655,7 @@ export default function BrainConsole() {
             </div>
             <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 800, color: GREEN }}>{homeostasis}%</div>
+                <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 800, color: GREEN }}>{telemetry ? telemetry.homeostasis : homeostasis}%</div>
                 <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em" }}>HOMEOSTASIS</div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>

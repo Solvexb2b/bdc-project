@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { startHeartbeat } from "./lib/heartbeat";
+import { initializeWorkerPool } from "./lib/workers";
 
 const rawPort = process.env["PORT"];
 
@@ -23,6 +24,7 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  initializeWorkerPool();
   startHeartbeat();
-  logger.info("SOLVEX-CORE-02: ACTIVE | Sovereign Operating Mode | Monitoring Initialized");
+  logger.info("SOLVEX-CORE-03: ACTIVE | Sovereign Operating Mode | Worker Pool + Vault Initialized");
 });
