@@ -1,19 +1,20 @@
 /**
  * SOLVEX-CORE: INTENT-BASED SIGNING PROTOCOL
- * AIR-GAPPED EXECUTION MODEL
+ * AIR-GAPPED EXECUTION MODEL — ASYMMETRIC VERIFICATION
  *
  * The engine holds ZERO private keys. It is physically incapable of asset transfer.
  *
  * Protocol:
- *   1. Engine generates Signed Intent JSON (action, target, nonce, lamport, collapseHash)
- *   2. Engine signs intent HMAC via Vault Sidecar (sidecar holds the HMAC key)
+ *   1. Engine generates Intent JSON with a canonical 'header' string
+ *   2. Hardware device (cold wallet / YubiKey / OS Enclave) signs: header + intentId
  *   3. Engine emits intent and HALTS — enters AWAITING_SIGNER state
- *   4. External Authorized Signer (cold wallet / YubiKey) posts confirmationHash
- *   5. Engine resumes, validates hash, marks intent CONFIRMED
+ *   4. Hardware POSTs { header, intentId, signature } to /api/signer/confirm
+ *   5. Engine verifies signature against registered public key (never sees private key)
+ *   6. On valid signature: CONFIRMED — solution registers as immutable marketplace asset
  *
- * Solana Intent Generation:
- *   Generates an unsigned Solana Memo Program instruction containing the collapse hash.
- *   The hardware signer signs and broadcasts it. The engine never sees the private key.
+ * Verification: crypto.verify() — RSA-SHA256 or Ed25519 depending on key type
+ * Public key: SOLVEX_SIGNER_PUBLIC_KEY env var (PEM format)
+ * Fallback:   HMAC confirmation hash (legacy, used when no public key registered)
  */
 
 import crypto from "crypto";
@@ -34,65 +35,107 @@ export type IntentStatus = "PENDING" | "AWAITING_SIGNER" | "CONFIRMED" | "EXPIRE
 export interface SignedIntent {
   intentId: string;
   action: IntentAction;
-  target: string;        // problemId, orderId, or address
+  target: string;
   nonce: string;
   lamport: number;
   collapseHash: string;
   accretionFloor: string;
   timestamp: string;
-  hmac: string;          // vault-signed HMAC of the intent payload
+  /**
+   * Canonical header — this is the exact string the hardware device signs.
+   * Format: SOLVEX:{intentId}:{action}:{target}:{lamport}:{collapseHash}:{accretionFloor}:{timestamp}
+   * The device computes: sign('sha256', Buffer.from(header + intentId), privateKey)
+   */
+  header: string;
+  hmac: string;               // vault HMAC — used for legacy confirmation fallback
   solanaIntent: SolanaIntent | null;
   status: IntentStatus;
-  confirmationHash: string | null;
+  signature: string | null;   // hex-encoded asymmetric signature from hardware
   confirmedAt: string | null;
   expiresAt: string;
+  verificationMode: "ASYMMETRIC" | "HMAC_LEGACY";
 }
 
 export interface SolanaIntent {
   network: "devnet" | "mainnet-beta";
-  programId: string;     // Memo program
+  programId: string;
   feePayer: "AWAITING_HARDWARE_PUBKEY";
   recentBlockhash: "AWAITING_RPC_FETCH";
   instruction: {
     programId: string;
-    data: string;        // base64-encoded collapse hash — the on-chain memo
+    data: string;
     accounts: never[];
   };
   signerRequired: "HARDWARE_COLD_WALLET" | "YUBIKEY";
   note: string;
 }
 
-// ── In-memory intent ledger ────────────────────────────────────────────────────
-// In production this would persist to DB; for now in-memory with TTL
-const INTENT_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const intentLedger = new Map<string, SignedIntent>();
+// ── Public key registry ────────────────────────────────────────────────────────
+// Load once at startup — PEM format, RSA or Ed25519
+function loadSignerPublicKey(): crypto.KeyObject | null {
+  const pem = process.env.SOLVEX_SIGNER_PUBLIC_KEY;
+  if (!pem) return null;
+  try {
+    return crypto.createPublicKey(pem.replace(/\\n/g, "\n"));
+  } catch (err) {
+    logger.error({ err }, "SIGNER: failed to parse SOLVEX_SIGNER_PUBLIC_KEY — falling back to HMAC");
+    return null;
+  }
+}
+
+let _signerPublicKey: crypto.KeyObject | null = loadSignerPublicKey();
+
+export const getSignerPublicKey = () => _signerPublicKey;
+export const isAsymmetricMode = () => _signerPublicKey !== null;
+
+// Allow runtime key registration (e.g. via admin endpoint)
+export function registerSignerPublicKey(pem: string): { ok: boolean; error?: string } {
+  try {
+    _signerPublicKey = crypto.createPublicKey(pem.replace(/\\n/g, "\n"));
+    logger.info("SIGNER: asymmetric public key registered — hardware interlock upgraded");
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err.message };
+  }
+}
+
+// ── Canonical header builder ───────────────────────────────────────────────────
+// Deterministic — hardware device builds this same string from the pending intent,
+// appends intentId, and signs the whole thing.
+export function buildHeader(intent: Pick<SignedIntent, "intentId" | "action" | "target" | "lamport" | "collapseHash" | "accretionFloor" | "timestamp">): string {
+  return [
+    "SOLVEX",
+    intent.intentId,
+    intent.action,
+    intent.target,
+    String(intent.lamport),
+    intent.collapseHash,
+    intent.accretionFloor,
+    intent.timestamp,
+  ].join(":");
+}
 
 // ── Solana intent generator ────────────────────────────────────────────────────
-// Generates a valid Solana Memo Program instruction structure.
-// The hardware signer provides: feePayer pubkey, recentBlockhash (from RPC), signature.
-// SOLANA_MEMO_PROGRAM_ID is the canonical Memo v2 program on devnet + mainnet.
 const SOLANA_MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
 
 function buildSolanaIntent(collapseHash: string, nonce: string): SolanaIntent {
-  // Encode collapse hash as base64 for the memo instruction data
   const memoData = Buffer.from(`solvex:${collapseHash}:${nonce}`).toString("base64");
-
   return {
     network: (process.env.SOLANA_NETWORK as "devnet" | "mainnet-beta") ?? "devnet",
     programId: SOLANA_MEMO_PROGRAM_ID,
     feePayer: "AWAITING_HARDWARE_PUBKEY",
     recentBlockhash: "AWAITING_RPC_FETCH",
-    instruction: {
-      programId: SOLANA_MEMO_PROGRAM_ID,
-      data: memoData,
-      accounts: [],
-    },
+    instruction: { programId: SOLANA_MEMO_PROGRAM_ID, data: memoData, accounts: [] },
     signerRequired: process.env.YUBIKEY_MODE === "true" ? "YUBIKEY" : "HARDWARE_COLD_WALLET",
     note:
-      "Submit this instruction to Solana RPC after hardware signing. " +
-      "Set feePayer to hardware wallet pubkey and recentBlockhash from getLatestBlockhash().",
+      "Set feePayer to hardware wallet pubkey and recentBlockhash from getLatestBlockhash(). " +
+      "Sign Buffer.from(header + intentId) locally then POST to /api/signer/confirm.",
   };
 }
+
+// ── Intent ledger ──────────────────────────────────────────────────────────────
+const INTENT_TTL_MS = 5 * 60 * 1000;
+const intentLedger = new Map<string, SignedIntent>();
 
 // ── Intent emitter ─────────────────────────────────────────────────────────────
 export async function emitIntent(
@@ -108,9 +151,10 @@ export async function emitIntent(
   const expiresAt = new Date(Date.now() + INTENT_TTL_MS).toISOString();
 
   const payload = { intentId, action, target, nonce, lamport, collapseHash, accretionFloor, timestamp };
-
-  // Vault sidecar signs the intent — engine never computes with the raw key
   const secured = await executeSecure(`intent.${action}`, payload);
+
+  const intentBase = { intentId, action, target, lamport, collapseHash, accretionFloor, timestamp };
+  const header = buildHeader(intentBase);
 
   const intent: SignedIntent = {
     intentId,
@@ -121,31 +165,72 @@ export async function emitIntent(
     collapseHash,
     accretionFloor,
     timestamp,
+    header,
     hmac: secured.signature,
     solanaIntent: buildSolanaIntent(collapseHash, nonce),
     status: "AWAITING_SIGNER",
-    confirmationHash: null,
+    signature: null,
     confirmedAt: null,
     expiresAt,
+    verificationMode: isAsymmetricMode() ? "ASYMMETRIC" : "HMAC_LEGACY",
   };
 
   intentLedger.set(intentId, intent);
 
   logger.info(
-    { intentId, action, target, lamport, status: "AWAITING_SIGNER" },
-    "INTENT_EMITTED: engine halted — awaiting hardware signer confirmation",
+    { intentId, action, target, lamport, mode: intent.verificationMode },
+    "INTENT_EMITTED: engine halted — awaiting hardware signer",
   );
 
   return intent;
 }
 
+// ── Asymmetric verification ────────────────────────────────────────────────────
+// Hardware device signed: Buffer.from(header + intentId) with its private key.
+// We verify with the registered public key only — private key never touches this process.
+function verifyAsymmetric(header: string, intentId: string, signatureHex: string): boolean {
+  const pubKey = _signerPublicKey;
+  if (!pubKey) return false;
+  try {
+    const data = Buffer.from(header + intentId);
+    const sig = Buffer.from(signatureHex, "hex");
+    const keyType = pubKey.asymmetricKeyType;
+    // Ed25519 doesn't use a hash algorithm in verify() — it's built into the curve
+    const algorithm = keyType === "ed25519" ? null : "sha256";
+    return crypto.verify(algorithm, data, pubKey, sig);
+  } catch {
+    return false;
+  }
+}
+
+// ── HMAC legacy verification ───────────────────────────────────────────────────
+function verifyHmacLegacy(intent: SignedIntent, confirmationHash: string): boolean {
+  const expected = crypto
+    .createHash("sha256")
+    .update(`${intent.intentId}:${intent.hmac}:${intent.nonce}`)
+    .digest("hex");
+  if (confirmationHash.length !== expected.length) return false;
+  return crypto.timingSafeEqual(
+    Buffer.from(confirmationHash, "hex").slice(0, 32),
+    Buffer.from(expected, "hex").slice(0, 32),
+  );
+}
+
 // ── Confirmation handler ───────────────────────────────────────────────────────
-// Called by the hardware signer via POST /api/signer/confirm
-export function confirmIntent(intentId: string, confirmationHash: string): {
+export interface ConfirmPayload {
+  intentId: string;
+  header?: string;           // required for asymmetric mode
+  signature?: string;        // hex — asymmetric mode
+  confirmationHash?: string; // hex — HMAC legacy fallback
+}
+
+export function confirmIntent(payload: ConfirmPayload): {
   ok: boolean;
   error?: string;
   intent?: SignedIntent;
+  mode?: string;
 } {
+  const { intentId, header, signature, confirmationHash } = payload;
   const intent = intentLedger.get(intentId);
   if (!intent) return { ok: false, error: "INTENT_NOT_FOUND" };
   if (intent.status !== "AWAITING_SIGNER") return { ok: false, error: `INTENT_STATUS_INVALID: ${intent.status}` };
@@ -154,29 +239,43 @@ export function confirmIntent(intentId: string, confirmationHash: string): {
     return { ok: false, error: "INTENT_EXPIRED" };
   }
 
-  // Validate: confirmation hash must be SHA-256 of intentId + hmac + nonce
-  const expected = crypto
-    .createHash("sha256")
-    .update(`${intent.intentId}:${intent.hmac}:${intent.nonce}`)
-    .digest("hex");
+  let verified = false;
+  let mode = "NONE";
 
-  // Constant-time comparison — no timing oracle
-  const isValid =
-    confirmationHash.length === expected.length &&
-    crypto.timingSafeEqual(Buffer.from(confirmationHash, "hex").slice(0, 32), Buffer.from(expected, "hex").slice(0, 32));
+  // Path 1: Asymmetric — preferred when public key is registered
+  if (isAsymmetricMode() && header && signature) {
+    // Verify that the header matches what we generated (prevents header substitution attacks)
+    if (header !== intent.header) {
+      intent.status = "REJECTED";
+      logger.warn({ intentId }, "INTENT_REJECTED: header mismatch");
+      return { ok: false, error: "HEADER_MISMATCH" };
+    }
+    verified = verifyAsymmetric(header, intentId, signature);
+    mode = "ASYMMETRIC";
+  }
+  // Path 2: HMAC legacy fallback
+  else if (confirmationHash) {
+    verified = verifyHmacLegacy(intent, confirmationHash);
+    mode = "HMAC_LEGACY";
+  }
+  else {
+    return { ok: false, error: isAsymmetricMode()
+      ? "ASYMMETRIC_MODE: provide header + signature"
+      : "LEGACY_MODE: provide confirmationHash" };
+  }
 
-  if (!isValid) {
+  if (!verified) {
     intent.status = "REJECTED";
-    logger.warn({ intentId, expected: expected.slice(0, 16) + "..." }, "INTENT_REJECTED: confirmation hash mismatch");
-    return { ok: false, error: "CONFIRMATION_HASH_MISMATCH" };
+    logger.warn({ intentId, mode }, "INTENT_REJECTED: signature verification failed");
+    return { ok: false, error: "SIGNATURE_INVALID" };
   }
 
   intent.status = "CONFIRMED";
-  intent.confirmationHash = confirmationHash;
+  intent.signature = signature ?? confirmationHash ?? null;
   intent.confirmedAt = new Date().toISOString();
 
-  logger.info({ intentId, action: intent.action }, "INTENT_CONFIRMED: hardware signer verified");
-  return { ok: true, intent };
+  logger.info({ intentId, action: intent.action, mode }, "INTENT_CONFIRMED: hardware signer verified");
+  return { ok: true, intent, mode };
 }
 
 // ── Ledger queries ─────────────────────────────────────────────────────────────
@@ -191,7 +290,7 @@ export const getAllIntents = (): SignedIntent[] =>
 export const getIntent = (intentId: string): SignedIntent | undefined =>
   intentLedger.get(intentId);
 
-// Prune expired intents periodically
+// Prune expired intents
 setInterval(() => {
   const now = Date.now();
   for (const [id, intent] of intentLedger.entries()) {
