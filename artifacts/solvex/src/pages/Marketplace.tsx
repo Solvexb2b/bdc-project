@@ -18,7 +18,7 @@ const DOMAIN_LABELS: Record<string, string> = {
 
 export default function Marketplace() {
   const { data: products, isLoading: loadingProducts } = useListProducts();
-  const { data: problems, isLoading: loadingProblems } = useListProblems();
+  const { data: problems, isLoading: loadingProblems } = useListProblems({ status: "solution_submitted", limit: 500 });
   const [activeTab, setActiveTab] = useState<"vault" | "bounties">("vault");
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -191,32 +191,36 @@ export default function Marketplace() {
 
         {activeTab === "bounties" && (
           <div style={{ padding: "24px 40px" }}>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.2em", color: "#5B6480", marginBottom: 20 }}>
-              OPEN BOUNTIES — CRAWLER-DISCOVERED UNSOLVED PROBLEMS
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, letterSpacing: "0.2em", color: "#5B6480" }}>
+                VERIFIED PARADOX REGISTRY — dAIsy BRAIN RESOLVED
+              </div>
+              {!loadingProblems && (
+                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#34D399", letterSpacing: "0.12em" }}>
+                  {(problems ?? []).length} VERIFIED
+                </div>
+              )}
             </div>
             {loadingProblems ? (
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#3D4560" }}>SCANNING SOURCES...</div>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#3D4560" }}>QUERYING BRAIN LEDGER...</div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
                 {(problems ?? []).map(p => (
-                  <div key={p.id} style={{ background: "#07091A", border: "1px solid #1A2035", padding: 24 }}>
+                  <div key={p.id} style={{ background: "#07091A", border: "1px solid #1A2035", padding: 24, borderLeft: "2px solid #34D399" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                       <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#D4AF37", letterSpacing: "0.14em" }}>{(p.category ?? "").toUpperCase()}</div>
-                      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#34D399", letterSpacing: "0.14em" }}>{(p.status ?? "").toUpperCase()}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#34D399" }} />
+                        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: "#34D399", letterSpacing: "0.14em" }}>BRAIN VERIFIED</div>
+                      </div>
                     </div>
-                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700, color: "#FFFFFF", marginBottom: 8 }}>{p.title}</h3>
-                    <p style={{ fontSize: 10, color: "#5B6480", lineHeight: 1.55, marginBottom: 16 }}>{(p.description ?? "").slice(0, 120)}...</p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 16, fontWeight: 600, color: "#34D399" }}>{p.paymentOffer} {p.currency ?? "USD"}</div>
-                      <Link href={`/problems/${p.id}`}>
-                        <div style={{ padding: "7px 16px", border: "1px solid rgba(52,211,153,0.35)", color: "#34D399", fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, fontWeight: 800, letterSpacing: "0.14em", cursor: "pointer" }}>VIEW →</div>
-                      </Link>
-                    </div>
+                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: "#FFFFFF", marginBottom: 8, lineHeight: 1.3 }}>{p.title}</h3>
+                    <p style={{ fontSize: 10, color: "#5B6480", lineHeight: 1.55, marginBottom: 0 }}>{(p.description ?? "").slice(0, 140)}...</p>
                   </div>
                 ))}
                 {(problems ?? []).length === 0 && (
                   <div style={{ gridColumn: "span 2", padding: "60px 0", textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "#3D4560" }}>
-                    NO OPEN BOUNTIES — <Link href="/post-problem"><span style={{ color: "#D4AF37", cursor: "pointer" }}>POST ONE →</span></Link>
+                    BRAIN PROCESSING — RESOLUTIONS PENDING
                   </div>
                 )}
               </div>

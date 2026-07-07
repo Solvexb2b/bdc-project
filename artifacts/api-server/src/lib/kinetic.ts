@@ -289,6 +289,47 @@ async function processSynapticEntropy(nodeId: number): Promise<void> {
   await triggerConsensusProbe(`force-collapse:${solution.collapseHash}`);
 }
 
+// ── Bulk collapse — runs all open problems through the brain sequentially ──────
+export async function collapseAll(): Promise<{ processed: number; skipped: number }> {
+  const tether = tetherSnapshot();
+  const all = await db.select().from(problemsTable);
+  const open = all.filter(p => p.status === "open");
+  const total = all.length || 1;
+  let processed = 0;
+  let skipped = 0;
+
+  for (const problem of open) {
+    try {
+      const entropy = open.length / total;
+      const solution = await synthesizeParadox(0, tether, {
+        id: problem.id,
+        title: problem.title,
+        category: problem.category ?? "regulatory",
+        paymentOffer: problem.paymentOffer ?? "0",
+        createdAt: new Date(problem.createdAt),
+      }, entropy);
+      await finalizeSolution(
+        0, problem.id, solution.id, solution.collapseHash, entropy,
+        solution.resolution,
+        { title: problem.title, category: problem.category ?? "regulatory", paymentOffer: problem.paymentOffer ?? "0" },
+        tether,
+      );
+      state.collapseCount++;
+      state.lastCollapseAt = Date.now();
+      state.lastCollapseHash = solution.collapseHash;
+      state.lastCollapseProblemId = problem.id;
+      processed++;
+    } catch (err) {
+      logger.error({ err, problemId: problem.id }, "collapseAll: skipping problem due to error");
+      skipped++;
+    }
+  }
+
+  state.status = "STABLE";
+  state.entropy = 0;
+  return { processed, skipped };
+}
+
 // ── Public interface ──────────────────────────────────────────────────────────
 export const getKineticState = (): KineticState & {
   threshold: number;
