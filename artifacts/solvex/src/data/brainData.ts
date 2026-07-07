@@ -126,11 +126,29 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-028", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Dynamic System Call Sanitizer",               description: "Intercepts and filters system calls, immediately blocking unauthorized kernel access attempts." },
   { id: "S-029", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Static AST Analysis Parser",                  description: "Decodes and inspects incoming user code trees, identifying and discarding structural vulnerabilities." },
   { id: "S-030", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Hardware-Backed Nonce Generator",             description: "Leverages hardware-isolated keystore elements to generate globally unique, single-use security tokens." },
+
+  // ─── LAYER 3: HARDWARE ORCHESTRATION & BARE-METAL ACCESS (S-031–S-045) ──
+  { id: "S-031", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Direct Register Memory Mapping",              description: "Maps physical peripheral registers directly into safe memory space for immediate hardware read/write." },
+  { id: "S-032", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "DMA Ring-Buffer Piper",                       description: "Offloads high-throughput data streams directly from sensors to memory without involving the CPU." },
+  { id: "S-033", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Intelligent CPU Thread Pinning",              description: "Locks intensive compilation tasks to dedicated physical cores, avoiding performance-degrading context switches." },
+  { id: "S-034", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Low-Latency Interrupt Controller",            description: "Prioritizes and dispatches hardware interrupt signals to specialized micro-handlers in less than 5 microseconds." },
+  { id: "S-035", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Thermal Throttling Adaptive Governor",        description: "Reduces mathematical task precision dynamically during core heat spikes to prevent hardware damage." },
+  { id: "S-036", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Direct Assembly Port Writer",                 description: "Uses low-level raw assembly instructions (e.g., outb) inside type-safe wrapper functions to toggle I/O lines." },
+  { id: "S-037", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Volatilization Memory Allocator",             description: "Allocates high-speed, non-pageable memory blocks for latency-critical sensor processing loops." },
+  { id: "S-038", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Zero-Copy Network Buffer Transfer",           description: "Transfers physical NIC packets straight to user space to save memory bandwidth." },
+  { id: "S-039", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Synchronous Hardware Signal Correlator",      description: "Microsecond-accurate alignment of concurrent inputs from physical sensors and radios." },
+  { id: "S-040", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Power-Rail Voltage Adjuster",                 description: "Scales back system clock rate and voltage dynamically when the node is operating on low reserve battery levels." },
+  { id: "S-041", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Cache-Line Aligned Ring Buffer",              description: "Aligns critical communication queues with CPU cache-lines to eliminate cache invalidation delays." },
+  { id: "S-042", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Hardware Watchdog Pulse Emitter",             description: "Emits periodic keep-alive pulses to physical CPU timer units to auto-recover from system lockups." },
+  { id: "S-043", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Non-Pageable RAM Partition Lock",             description: "Prevents the underlying kernel from swapping out critical core execution code blocks to secondary storage." },
+  { id: "S-044", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Hardware Co-Processor Task Delegator",        description: "Offloads specialized vector and matrix arithmetic tasks directly to physical auxiliary accelerators." },
+  { id: "S-045", layer: 3, layerName: "Hardware Orchestration & Bare-Metal Access", name: "Sensor Register Polling Loop",                description: "Implements ultra-fast, non-blocking hardware state checks for mission-critical sensor inputs." },
 ];
 
 export const SOLUTION_LAYERS = [
   { num: 1, name: "Chrono-Consistency & Time Synchronization", solutions: 15, color: "#60A5FA", symbol: "⧖", desc: "Deterministic clock ordering, Lamport causality, anti-skew and temporal compaction" },
   { num: 2, name: "Enclave Cryptography & Sandboxed Security", solutions: 15, color: "#A78BFA", symbol: "⬡", desc: "Military-grade enclaves, zero-knowledge proofs, memory isolation and bytecode verification" },
+  { num: 3, name: "Hardware Orchestration & Bare-Metal Access", solutions: 15, color: "#34D399", symbol: "⬢", desc: "Direct register mapping, DMA pipelines, thread pinning and zero-copy hardware access" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
