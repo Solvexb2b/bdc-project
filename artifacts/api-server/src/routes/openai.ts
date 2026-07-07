@@ -4,6 +4,7 @@ import { conversations, messages } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { textToSpeechStream } from "@workspace/integrations-openai-ai-server/audio";
 import { eq, asc } from "drizzle-orm";
+import { requireAuth } from "../middlewares/requireOwner";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ TONE RULES:
 - Use technical terminology naturally. Don't over-explain basics to institutional operators.
 - Occasionally use the platform's language: "Sovereign Core", "Paradox Box", "Glass Box Active", "Lamport-ordered", etc.`;
 
-router.get("/openai/conversations", async (req, res) => {
+router.get("/openai/conversations", requireAuth, async (req, res) => {
   const all = await db.select().from(conversations).orderBy(asc(conversations.createdAt));
   res.json(all);
 });
@@ -71,8 +72,8 @@ router.get("/openai/conversations/:id", async (req, res) => {
   res.json({ ...conv, messages: msgs });
 });
 
-router.delete("/openai/conversations/:id", async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+router.delete("/openai/conversations/:id", requireAuth, async (req, res) => {
+  const id = parseInt(String(req.params.id), 10);
   await db.delete(messages).where(eq(messages.conversationId, id));
   await db.delete(conversations).where(eq(conversations.id, id));
   res.status(204).end();

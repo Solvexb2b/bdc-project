@@ -4,11 +4,12 @@ import { ordersTable, paradoxProductsTable, vaultEntriesTable, auditLogTable } f
 import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import crypto from "crypto";
+import { requireOwner } from "../middlewares/requireOwner";
 
 const WALLET_ADDRESSES: Record<string, string> = {
-  eth: "0x742d35Cc6634C0532925a3b8D4C9C3a4b0f4b1E",
-  usdc: "0x892d45Cc6634C0532925a3b8D4C9C3a4b0f4b1E",
-  btc: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+  eth:  process.env.WALLET_ETH  ?? "0x742d35Cc6634C0532925a3b8D4C9C3a4b0f4b1E",
+  usdc: process.env.WALLET_USDC ?? "0x892d45Cc6634C0532925a3b8D4C9C3a4b0f4b1E",
+  btc:  process.env.WALLET_BTC  ?? "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
 };
 
 const HOLD_HOURS = 72;
@@ -58,7 +59,7 @@ router.get("/orders/mine", async (req, res) => {
   }
 });
 
-router.get("/orders/all", async (req, res) => {
+router.get("/orders/all", requireOwner, async (req, res) => {
   try {
     const orders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt));
     res.json(orders);

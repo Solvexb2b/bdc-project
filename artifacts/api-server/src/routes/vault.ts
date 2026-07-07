@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { vaultEntriesTable, vaultConfigTable, ownerSettingsTable, auditLogTable, userPurchasesTable, ordersTable } from "@workspace/db";
 import { eq, and, lte } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { requireOwner } from "../middlewares/requireOwner";
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get("/vault/config", async (req, res) => {
   }
 });
 
-router.get("/vault/entries", async (req, res) => {
+router.get("/vault/entries", requireOwner, async (req, res) => {
   try {
     const entries = await db.select().from(vaultEntriesTable);
     res.json(entries);
@@ -39,7 +40,7 @@ router.get("/vault/available-funds", async (req, res) => {
   }
 });
 
-router.post("/vault/withdraw", async (req, res) => {
+router.post("/vault/withdraw", requireOwner, async (req, res) => {
   try {
     const { entryIds, withdrawalAddress } = req.body;
     if (!entryIds?.length || !withdrawalAddress) {
@@ -62,7 +63,7 @@ router.post("/vault/withdraw", async (req, res) => {
   }
 });
 
-router.post("/vault/process", async (req, res) => {
+router.post("/vault/process", requireOwner, async (req, res) => {
   try {
     const now = new Date();
     const expiredEntries = await db.select().from(vaultEntriesTable)

@@ -4,8 +4,11 @@ import { ownerSettingsTable, auditLogTable, vaultEntriesTable, ordersTable, prob
 import { eq, and, lte, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { seedProducts } from "../seed";
+import { requireOwner } from "../middlewares/requireOwner";
 
 const router = Router();
+
+router.use("/owner", requireOwner);
 
 router.get("/owner/settings", async (req, res) => {
   try {
