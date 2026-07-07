@@ -6,7 +6,7 @@ const CHAMBERS = [
   { num: "II",  name: "MOTION & TIME", paradoxes: 10, symbol: "☸", desc: "Resolves causal drift in untrusted network environments", color: "#60A5FA" },
   { num: "III", name: "CHOICE & SELF", paradoxes: 15, symbol: "☥", desc: "Manages autonomous decision-making and agentic sovereignty", color: "#A78BFA" },
   { num: "IV",  name: "STRUCTURE",     paradoxes: 10, symbol: "⬡", desc: "Ensures hardware-level stability for bare-metal execution", color: "#34D399" },
-  { num: "V",   name: "TRANSCENDENCE", paradoxes: 5,  symbol: "◬", desc: "Final reconciliation of all data inputs into absolute output", color: "#F59E0B" },
+  { num: "V",   name: "TRANSCENDENCE", paradoxes: 11, symbol: "👁", desc: "Final reconciliation — IRS-First Rule, U.A.R.E.F.A.K.E. convergence, absolute sovereign output", color: "#F59E0B" },
 ];
 
 const PIPELINE_STEPS = [

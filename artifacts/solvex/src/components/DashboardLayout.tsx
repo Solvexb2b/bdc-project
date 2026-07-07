@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useGetMe, useLogout } from "@workspace/api-client-react";
+import { PARADOXES } from "../data/brainData";
 
 // Elder Futhark runes for Chamber I (paradoxes 1–13)
 const FUTHARK = ["ᚠ","ᚢ","ᚦ","ᚨ","ᚱ","ᚲ","ᚷ","ᚹ","ᚺ","ᚾ","ᛁ","ᛃ","ᛇ"];
@@ -15,8 +16,10 @@ function getParadoxSymbol(paradoxId: number): { symbol: string; chamber: string;
 
 function renderChamberIndicator(paradoxId: number): string {
   const { symbol, chamber } = getParadoxSymbol(paradoxId);
+  const paradox = PARADOXES.find(p => p.id === paradoxId);
+  const name = paradox ? paradox.name.split(" vs ")[0].split(" (")[0].slice(0, 22) : "UNKNOWN";
   const ts = new Date().toISOString().slice(11, 23);
-  return `[${ts}] GLASS_BOX_LIGHT // [CHAMBER_ENGAGED:${chamber}] -> ${symbol} (P${String(paradoxId).padStart(2,"0")})`;
+  return `[${ts}] ${chamber} -> ${symbol} P${String(paradoxId).padStart(2,"0")} ${name}`;
 }
 
 function OmniscientTerminal() {
@@ -28,7 +31,7 @@ function OmniscientTerminal() {
   useEffect(() => {
     const advance = () => {
       setParadoxId(prev => {
-        const next = prev >= 53 ? 1 : prev + 1;
+        const next = prev >= 59 ? 1 : prev + 1;
         const line = renderChamberIndicator(next);
         logRef.current = [...logRef.current.slice(-6), line];
         setLog([...logRef.current]);
@@ -61,8 +64,8 @@ function OmniscientTerminal() {
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.18em", color: current.color, fontWeight: 700 }}>
             {current.chamber} · P{String(paradoxId).padStart(2,"0")}
           </div>
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.1em", color: "#3D4560", marginTop: 2 }}>
-            [CHAMBER_ENGAGED]
+          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.08em", color: "#3D4560", marginTop: 2 }}>
+            {PARADOXES.find(p => p.id === paradoxId)?.name.slice(0, 26) ?? "CHAMBER_ENGAGED"}
           </div>
         </div>
       </div>
@@ -89,7 +92,7 @@ function OmniscientTerminal() {
           }}
         />
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", letterSpacing: "0.08em", lineHeight: 1.5 }}>
-          dAIsy haMINJA<br />53-PARADOX ENGINE v3.1
+          dAIsy haMINJA<br />59-PARADOX ENGINE v3.1
         </div>
       </div>
     </div>
@@ -98,8 +101,9 @@ function OmniscientTerminal() {
 
 const NAV_ITEMS = [
   { href: "/marketplace", label: "PARADOX VAULT", icon: "◈" },
+  { href: "/brain", label: "BRAIN CONSOLE", icon: "◉" },
   { href: "/library", label: "SOLUTION LIBRARY", icon: "▣" },
-  { href: "/portal", label: "CLIENT PORTAL", icon: "◉" },
+  { href: "/portal", label: "CLIENT PORTAL", icon: "⬡" },
   { href: "/post-problem", label: "POST BOUNTY", icon: "◆" },
 ];
 
@@ -152,7 +156,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   if (isLoading) return (
     <div style={{ minHeight: "100vh", background: "#05080F", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ fontFamily: "'IBM Plex Mono', monospace", color: "#D4AF37", fontSize: 12, letterSpacing: "0.2em" }}>
-        INITIALIZING 53-PARADOX ENGINE...
+        INITIALIZING 59-PARADOX ENGINE...
       </div>
     </div>
   );

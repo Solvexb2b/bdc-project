@@ -9,6 +9,7 @@ import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
 import ProblemDetail from "./pages/ProblemDetail";
 import PostProblem from "./pages/PostProblem";
+import BrainConsole from "./pages/BrainConsole";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/product/:id" component={ProductDetail} />
       <Route path="/problems/:id" component={ProblemDetail} />
       <Route path="/post-problem" component={PostProblem} />
+      <Route path="/brain" component={BrainConsole} />
       <Route path="/library" component={() => <DashboardLayout><Placeholder name="User Library" /></DashboardLayout>} />
       <Route path="/solver" component={() => <DashboardLayout><Placeholder name="Solver Dashboard" /></DashboardLayout>} />
       <Route path="/portal" component={() => <DashboardLayout><Placeholder name="Client Portal" /></DashboardLayout>} />

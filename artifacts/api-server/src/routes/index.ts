@@ -13,6 +13,7 @@ import notificationsRouter from "./notifications";
 import earningsRouter from "./earnings";
 import offersRouter from "./offers";
 import ownerRouter from "./owner";
+import brainRouter from "./brain";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(notificationsRouter);
 router.use(earningsRouter);
 router.use(offersRouter);
 router.use(ownerRouter);
+router.use(brainRouter);
 
 export default router;
