@@ -19,7 +19,7 @@ interface ChatMessage { role: "user" | "daisy"; content: string; ts: number; }
 
 const INITIAL_MSG: ChatMessage = {
   role: "daisy",
-  content: "dAIsy haMINJA Sovereign Core initialized.\n\nU.A.R.E.F.A.K.E. ENGINE CONSOLE — ACTIVE\nHomeostasis Index: 98.4% | Active Tethers: 14 | Pipeline: 420.69 ops/sec\nIRS EFTPS: SECURED & REMITTING | Lamport Clock: ORDERED\n\nAwaiting enterprise operator directives.",
+  content: "dAIsy haMINJA Sovereign Core initialized.\n\nSYSTEM ID: SOLVEX-CORE-01 | STATUS: ACTIVE — SOVEREIGN OPERATING MODE\nU.A.R.E.F.A.K.E. ENGINE CONSOLE — 54-NODE RECURSIVE PIPELINE ONLINE\nHomeostasis Index: 98.4% | Pipeline: 420.69K ops/sec | Latency: 0.14ms jitter | P99: 0.32ms\nNIST SP 800-53 / SOC 2 TYPE II / ISO 27001 — CERTIFIED\n\nAPD-01 ENGAGED: Consensus mandate active. Non-repudiation logging via L1 Lamport order. Paradox Box isolation on standby.\n\nAwaiting enterprise operator directives.",
   ts: Date.now(),
 };
 
@@ -613,38 +613,56 @@ export default function BrainConsole() {
           <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(212,175,55,0.02) 39px,rgba(212,175,55,0.02) 40px)" }} />
           <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 4 }}>U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
-              <div style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: "#D8DAE8", letterSpacing: "0.04em", marginBottom: 4 }}>dAIsy haMINJA Brain Console</div>
-              <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.15em", color: MID }}>Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine</div>
+              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 2 }}>SYSTEM ID: SOLVEX-CORE-01 &nbsp;|&nbsp; U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
+              <div style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: "#D8DAE8", letterSpacing: "0.04em", marginBottom: 3 }}>dAIsy haMINJA Brain Console</div>
+              <div style={{ fontFamily: MONO, fontSize: 7.5, letterSpacing: "0.12em", color: MID }}>Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine &nbsp;·&nbsp; 54-Node Recursive Pipeline</div>
             </div>
             <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 800, color: GREEN }}>{homeostasis}%</div>
                 <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em" }}>HOMEOSTASIS</div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <div style={{ width: 7, height: 7, borderRadius: "50%", background: GREEN, boxShadow: pulse ? "0 0 10px 3px rgba(52,211,153,0.5)" : "0 0 3px 1px rgba(52,211,153,0.2)", transition: "box-shadow 0.7s ease" }} />
-                  <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, letterSpacing: "0.15em" }}>AUTONOMOUS</span>
+                  <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, letterSpacing: "0.15em" }}>SOVEREIGN OPERATING MODE</span>
                 </div>
-                <div style={{ fontFamily: MONO, fontSize: 8, color: MID }}>59 PARADOXES · 105 SOLUTIONS</div>
-                <div style={{ fontFamily: MONO, fontSize: 8, color: MID }}>5 CHAMBERS · NIST ✓ SOC2 ✓</div>
+                <div style={{ fontFamily: MONO, fontSize: 7.5, color: MID }}>59 PARADOXES · 105 SOLUTIONS · 7 LAYERS</div>
+                <div style={{ fontFamily: MONO, fontSize: 7.5, color: MID }}>NIST SP 800-53 ✓ &nbsp; SOC 2 TYPE II ✓ &nbsp; ISO 27001 ✓</div>
               </div>
             </div>
           </div>
 
           {/* System status row */}
-          <div style={{ position: "relative", zIndex: 1, marginTop: 14, paddingTop: 14, borderTop: "1px solid #1A2035", display: "flex", gap: 24 }}>
+          <div style={{ position: "relative", zIndex: 1, marginTop: 14, paddingTop: 14, borderTop: "1px solid #1A2035", display: "flex", gap: 28, flexWrap: "wrap" }}>
             {[
-              { label: "NIST GATE", val: "SOC 2 BASING" },
-              { label: "EFTPS TRANSFER", val: "SECURED & REALTIME" },
+              { label: "SYSTEM STATUS", val: "ACTIVE" },
+              { label: "PIPELINE", val: "420.69K ops/sec" },
+              { label: "LATENCY", val: "0.14ms jitter" },
+              { label: "P99", val: "0.32ms" },
               { label: "CLOCK STATUS", val: "LAMPORT ORDERED" },
-              { label: "PIPELINE", val: "420.69 ops/sec" },
-              { label: "ACTIVE NODES", val: "14 Fiduciaries" },
+              { label: "EFTPS TRANSFER", val: "SECURED & REALTIME" },
+              { label: "ACTIVE NODES", val: "54 Recursive" },
             ].map(s => (
               <div key={s.label}>
                 <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.15em", color: DIM, marginBottom: 2 }}>{s.label}</div>
                 <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: "#8B95B0" }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* APD-01 Directive Strip */}
+          <div style={{ position: "relative", zIndex: 1, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(212,175,55,0.12)", display: "flex", gap: 0, flexWrap: "wrap" }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: GOLD, marginBottom: 4, width: "100%" }}>APD-01 — AUTONOMOUS PROTOCOL DIRECTIVE</div>
+            {[
+              { tag: "CONSENSUS MANDATE", desc: "No Vault/Escrow execution without L5 match + L6 SOC 2 cert" },
+              { tag: "RECURSIVE ANALYSIS", desc: "59th-degree paradox → 54-node analysis, priority shifts L4→L7" },
+              { tag: "NON-REPUDIATION", desc: "All actions cryptographically signed, L1 Lamport-ordered" },
+              { tag: "PARADOX RESOLUTION", desc: "Volatile code diverted to Paradox Box for Sandbox isolation" },
+            ].map(d => (
+              <div key={d.tag} style={{ marginRight: 28, marginBottom: 4 }}>
+                <span style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: AMBER, letterSpacing: "0.1em" }}>{d.tag}: </span>
+                <span style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>{d.desc}</span>
               </div>
             ))}
           </div>
