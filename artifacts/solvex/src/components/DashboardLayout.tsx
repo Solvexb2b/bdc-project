@@ -104,13 +104,10 @@ const NAV_ITEMS = [
   { href: "/brain", label: "BRAIN CONSOLE", icon: "◉" },
   { href: "/challenges", label: "CHALLENGE HUB", icon: "⬡" },
   { href: "/library", label: "SOLUTION LIBRARY", icon: "▣" },
-  { href: "/portal", label: "CLIENT PORTAL", icon: "⬡" },
-  { href: "/post-problem", label: "POST BOUNTY", icon: "◆" },
 ];
 
 const ADMIN_ITEMS = [
   { href: "/owner", label: "COMMAND CENTER", icon: "⬡" },
-  { href: "/solver", label: "SOLVER DASHBOARD", icon: "◈" },
   { href: "/analytics", label: "ANALYTICS", icon: "▲" },
 ];
 

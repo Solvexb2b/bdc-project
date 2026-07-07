@@ -221,7 +221,7 @@ export default function Home() {
                 ENTER PARADOX VAULT →
               </div>
             </Link>
-            <Link href="/post-problem">
+            <Link href="/brain">
               <div style={{
                 padding: "14px 36px",
                 background: "transparent", color: "#D4AF37",
@@ -229,7 +229,7 @@ export default function Home() {
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", cursor: "pointer",
               }}>
-                POST BOUNTY
+                BRAIN CONSOLE →
               </div>
             </Link>
           </div>

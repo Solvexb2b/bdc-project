@@ -7,13 +7,9 @@ import NotFound from "@/pages/not-found";
 import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
-import ProblemDetail from "./pages/ProblemDetail";
-import PostProblem from "./pages/PostProblem";
 import BrainConsole from "./pages/BrainConsole";
 import ChallengeHub from "./pages/ChallengeHub";
 import Library from "./pages/Library";
-import SolverDashboard from "./pages/SolverDashboard";
-import ClientPortal from "./pages/ClientPortal";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Analytics from "./pages/Analytics";
 
@@ -25,13 +21,9 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/marketplace" component={Marketplace} />
       <Route path="/product/:id" component={ProductDetail} />
-      <Route path="/problems/:id" component={ProblemDetail} />
-      <Route path="/post-problem" component={PostProblem} />
       <Route path="/brain" component={BrainConsole} />
       <Route path="/challenges" component={ChallengeHub} />
       <Route path="/library" component={Library} />
-      <Route path="/solver" component={SolverDashboard} />
-      <Route path="/portal" component={ClientPortal} />
       <Route path="/owner" component={OwnerDashboard} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/login" component={() => <div className="min-h-screen flex items-center justify-center bg-background"><a href="/api/auth/login" className="text-primary font-mono text-xl hover:underline">Authenticate via Manus</a></div>} />
