@@ -10,3 +10,4 @@ export * from "./escrow";
 export * from "./crawler";
 export * from "./social";
 export * from "./brain";
+export * from "./vault-bridge";

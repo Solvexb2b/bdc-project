@@ -31,6 +31,7 @@ import { logger } from "./logger";
 import { getAccretionStatus, getPerSolutionFloor } from "./accretion";
 import { resolveHeuristic, kernelStatus, type ParadoxState } from "./heuristic-kernel";
 import { emitIntent } from "./intent";
+import { bridgeResolutionToVault } from "./vault-bridge";
 
 // ── Physical constants ─────────────────────────────────────────────────────────
 const THRESHOLD = 0.85;
@@ -220,10 +221,19 @@ async function finalizeSolution(
     status: "success",
   });
 
+  // Bridge brain resolution to vault products — fire-and-forget, non-fatal
+  bridgeResolutionToVault({
+    brainId: nanoid(),
+    paradoxId: problemId,
+    paradoxTitle: problem.title,
+    resolutionType: resolution.solutionType,
+    lamport,
+  }).catch(err => logger.warn({ err, problemId }, "vault-bridge: non-fatal bridge error"));
+
   logger.info(
     { nodeId, problemId, solutionId, collapseHash, entropy: entropy.toFixed(4), lamport,
       intentId: intent.intentId, resolutionType: resolution.solutionType, brainWritten: true },
-    "FORCE_COLLAPSE: brain updated + ledger committed + intent emitted — awaiting hardware signer",
+    "FORCE_COLLAPSE: brain updated + ledger committed + vault-bridge wired + intent emitted",
   );
 }
 
