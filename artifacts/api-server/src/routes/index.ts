@@ -20,6 +20,7 @@ import stripeRouter from "./stripe";
 import cryptoRouter from "./crypto";
 import kineticRouter from "./kinetic";
 import deliveryRouter from "./delivery";
+import challengesRouter from "./challenges";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use(stripeRouter);
 router.use(cryptoRouter);
 router.use(kineticRouter);
 router.use(deliveryRouter);
+router.use(challengesRouter);
 
 export default router;

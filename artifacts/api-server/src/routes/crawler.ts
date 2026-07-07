@@ -46,10 +46,23 @@ router.post("/crawler/import", async (req, res) => {
 // Expose fetchers directly for diagnostics
 router.get("/crawler/sources", (_req, res) => {
   res.json({
-    sources: ["hackernews", "reddit/cscareerquestions", "stackoverflow/architecture"],
+    sources: [
+      "hackernews",
+      "reddit/cscareerquestions",
+      "stackoverflow/architecture",
+    ],
+    challengePlatforms: [
+      "challenge-gov",
+      "xprize",
+      "wazoku",
+      "brightidea",
+      "hackerone",
+      "nasa-ctl",
+    ],
     autonomousMode: true,
     intervalMs: 10 * 60 * 1000,
     perSourceLimit: 8,
+    challengeScanIntervalMs: 24 * 60 * 60 * 1000,
   });
 });
 

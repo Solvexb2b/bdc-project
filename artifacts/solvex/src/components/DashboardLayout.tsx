@@ -92,7 +92,7 @@ function OmniscientTerminal() {
           }}
         />
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, color: "#2A3050", letterSpacing: "0.08em", lineHeight: 1.5 }}>
-          dAIsy haMINJA<br />59-PARADOX ENGINE v3.1
+          dAIsy haMINJA<br />88-PARADOX ENGINE v2.0
         </div>
       </div>
     </div>
@@ -102,6 +102,7 @@ function OmniscientTerminal() {
 const NAV_ITEMS = [
   { href: "/marketplace", label: "PARADOX VAULT", icon: "◈" },
   { href: "/brain", label: "BRAIN CONSOLE", icon: "◉" },
+  { href: "/challenges", label: "CHALLENGE HUB", icon: "⬡" },
   { href: "/library", label: "SOLUTION LIBRARY", icon: "▣" },
   { href: "/portal", label: "CLIENT PORTAL", icon: "⬡" },
   { href: "/post-problem", label: "POST BOUNTY", icon: "◆" },
