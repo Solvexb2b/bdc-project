@@ -19,6 +19,7 @@ import signerRouter from "./signer";
 import stripeRouter from "./stripe";
 import cryptoRouter from "./crypto";
 import kineticRouter from "./kinetic";
+import deliveryRouter from "./delivery";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use(signerRouter);
 router.use(stripeRouter);
 router.use(cryptoRouter);
 router.use(kineticRouter);
+router.use(deliveryRouter);
 
 export default router;
