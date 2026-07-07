@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
+import { DaisyFloat } from "./components/DaisyFloat";
 import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
 import ProductDetail from "./pages/ProductDetail";
@@ -40,6 +41,7 @@ function App() {
           <Router />
         </WouterRouter>
         <Toaster />
+        <DaisyFloat />
       </TooltipProvider>
     </QueryClientProvider>
   );
