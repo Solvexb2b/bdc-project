@@ -7,6 +7,7 @@ import { logger } from "./lib/logger";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { incrementOps } from "./lib/telemetry";
 import { getNextTick } from "./lib/lamport";
+import { l5ConsensusGate } from "./lib/consensus";
 
 const app: Express = express();
 
@@ -41,6 +42,8 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
+// Pillar 4: L5 Consensus gate — all state-changing routes must pass pre-validated consensus
+app.use("/api", l5ConsensusGate);
 app.use("/api", router);
 
 export default app;

@@ -8,7 +8,7 @@ const router = Router();
 // ── Real HN fetcher ────────────────────────────────────────────────────────────
 async function fetchHN(limit: number) {
   const res = await fetch("https://hacker-news.firebaseio.com/v0/askstories.json");
-  const ids: number[] = await res.json();
+  const ids = (await res.json()) as number[];
   const top = ids.slice(0, limit * 3);
   const items = await Promise.all(
     top.map(id => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json()))

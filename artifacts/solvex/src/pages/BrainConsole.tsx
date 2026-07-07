@@ -649,7 +649,7 @@ export default function BrainConsole() {
           <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(212,175,55,0.02) 39px,rgba(212,175,55,0.02) 40px)" }} />
           <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 2 }}>SYSTEM ID: SOLVEX-CORE-02 &nbsp;|&nbsp; U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
+              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 2 }}>SYSTEM ID: {telemetry?.systemId ?? "SOLVEX-CORE-FINALIZED"} &nbsp;|&nbsp; U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
               <div style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: "#D8DAE8", letterSpacing: "0.04em", marginBottom: 3 }}>dAIsy haMINJA Brain Console</div>
               <div style={{ fontFamily: MONO, fontSize: 7.5, letterSpacing: "0.12em", color: MID }}>Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine &nbsp;·&nbsp; 54-Node Recursive Pipeline</div>
             </div>

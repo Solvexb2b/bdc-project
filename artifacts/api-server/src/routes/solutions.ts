@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { solutionsTable, problemsTable, earningsTable, notificationsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { validateAccretionAlignment } from "../lib/accretion";
 
 const router = Router();
 
@@ -10,10 +11,20 @@ router.post("/solutions", async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
-    const { problemId, content } = req.body;
+    const { problemId, content, estimatedMarketImpactUSD } = req.body;
     if (!problemId || !content) { res.status(400).json({ error: "problemId and content required" }); return; }
     const [problem] = await db.select().from(problemsTable).where(eq(problemsTable.id, problemId)).limit(1);
     if (!problem) { res.status(404).json({ error: "Problem not found" }); return; }
+
+    // Pillar 3: Accretion validation — reject if below $23T/177% CAGR floor
+    if (estimatedMarketImpactUSD != null) {
+      const accretion = validateAccretionAlignment(Number(estimatedMarketImpactUSD));
+      if (!accretion.valid) {
+        res.status(422).json({ error: "ACCRETION_ALIGNMENT_FAILED", accretion });
+        return;
+      }
+    }
+
     const [solution] = await db.insert(solutionsTable).values({ problemId, solverId: userId, content, status: "pending" }).returning();
     await db.update(problemsTable).set({ status: "solution_submitted" }).where(eq(problemsTable.id, problemId));
     if (problem.clientId) {

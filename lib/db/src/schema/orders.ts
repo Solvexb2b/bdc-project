@@ -11,6 +11,7 @@ export const ordersTable = pgTable("orders", {
   amount: numeric("amount", { precision: 18, scale: 8 }).notNull(),
   walletAddress: text("wallet_address").notNull(),
   transactionHash: text("transaction_hash"),
+  licenseKey: text("license_key"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   deliveredAt: timestamp("delivered_at", { withTimezone: true }),

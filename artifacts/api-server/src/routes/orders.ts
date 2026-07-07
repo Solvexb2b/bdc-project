@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { ordersTable, paradoxProductsTable, vaultEntriesTable, auditLogTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import crypto from "crypto";
 
 const WALLET_ADDRESSES: Record<string, string> = {
   eth: "0x742d35Cc6634C0532925a3b8D4C9C3a4b0f4b1E",
@@ -84,7 +85,17 @@ router.post("/orders/:id/confirm", async (req, res) => {
     const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, req.params.id)).limit(1);
     if (!order) { res.status(404).json({ error: "Order not found" }); return; }
 
-    await db.update(ordersTable).set({ status: "confirmed", transactionHash, confirmedAt: new Date() }).where(eq(ordersTable.id, order.id));
+    // Generate real cryptographic license key: SHA-256 of orderId + productId + nonce
+    const licenseNonce = crypto.randomBytes(16).toString("hex");
+    const licenseKey = crypto
+      .createHash("sha256")
+      .update(`${order.id}:${order.productId}:${licenseNonce}:${Date.now()}`)
+      .digest("hex")
+      .toUpperCase()
+      .match(/.{1,8}/g)!
+      .join("-"); // Format: XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX
+
+    await db.update(ordersTable).set({ status: "confirmed", transactionHash, confirmedAt: new Date(), licenseKey }).where(eq(ordersTable.id, order.id));
     await db.update(vaultEntriesTable).set({ status: "held" }).where(eq(vaultEntriesTable.orderId, order.id));
 
     const [prod] = await db.select().from(paradoxProductsTable).where(eq(paradoxProductsTable.id, order.productId)).limit(1);
@@ -92,8 +103,8 @@ router.post("/orders/:id/confirm", async (req, res) => {
       await db.update(paradoxProductsTable).set({ salesCount: prod.salesCount + 1 }).where(eq(paradoxProductsTable.id, order.productId));
     }
 
-    await db.insert(auditLogTable).values({ id: nanoid(), eventType: "order_confirmed", userId: order.userId, orderId: order.id, details: JSON.stringify({ transactionHash }), status: "success" });
-    res.json({ success: true, message: "Order confirmed" });
+    await db.insert(auditLogTable).values({ id: nanoid(), eventType: "order_confirmed", userId: order.userId, orderId: order.id, details: JSON.stringify({ transactionHash, licenseKey }), status: "success" });
+    res.json({ success: true, message: "Order confirmed", licenseKey });
   } catch (err) {
     req.log.error({ err }, "Failed to confirm order");
     res.status(500).json({ error: "Internal server error" });
