@@ -21,6 +21,7 @@ import cryptoRouter from "./crypto";
 import kineticRouter from "./kinetic";
 import deliveryRouter from "./delivery";
 import challengesRouter from "./challenges";
+import quantumRouter from "./quantum";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(cryptoRouter);
 router.use(kineticRouter);
 router.use(deliveryRouter);
 router.use(challengesRouter);
+router.use(quantumRouter);
 
 export default router;

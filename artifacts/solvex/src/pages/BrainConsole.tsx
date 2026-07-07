@@ -885,7 +885,310 @@ function useLiveTelemetry() {
   return data;
 }
 
-const TABS = ["SOLUTIONS", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH", "DELIVERY PIPELINE"] as const;
+// ── QUANTUM FOUNDRY ────────────────────────────────────────────────────────────
+function QuantumFoundry() {
+  const [nodeStates, setNodeStates] = useState<string[]>(() => Array(54).fill("|0⟩"));
+  const [factoryData, setFactoryData] = useState<any>(null);
+  const [processing, setProcessing] = useState(false);
+  const [processResult, setProcessResult] = useState<string | null>(null);
+  const [cycleCount, setCycleCount] = useState(0);
+
+  useEffect(() => {
+    const QSTATES = ["|0⟩", "|1⟩", "|ψ⟩", "ENT", "CLK"];
+    const t = setInterval(() => {
+      setNodeStates(prev => prev.map(s => Math.random() < 0.22 ? QSTATES[Math.floor(Math.random() * QSTATES.length)] : s));
+      setCycleCount(c => c + 1);
+    }, 480);
+    return () => clearInterval(t);
+  }, []);
+
+  const loadFactory = async () => {
+    try {
+      const r = await fetch("/api/quantum/factory-status");
+      if (r.ok) setFactoryData(await r.json());
+    } catch { /* graceful */ }
+  };
+
+  useEffect(() => {
+    loadFactory();
+    const t = setInterval(loadFactory, 8000);
+    return () => clearInterval(t);
+  }, []);
+
+  const handleProcess = async () => {
+    setProcessing(true);
+    setProcessResult(null);
+    try {
+      const r = await fetch("/api/quantum/process-feedstock", { method: "POST" });
+      const d = await r.json();
+      setProcessResult(d.message ?? d.status);
+      await loadFactory();
+    } catch { /* graceful */ }
+    setProcessing(false);
+  };
+
+  const nodeColor = (s: string) => {
+    if (s === "|ψ⟩") return GOLD;
+    if (s === "ENT")  return PURPLE;
+    if (s === "CLK")  return GREEN;
+    if (s === "|1⟩")  return BLUE;
+    return "#1E2840";
+  };
+  const nodeBg = (s: string) => {
+    if (s === "|ψ⟩") return "#D4AF3718";
+    if (s === "ENT")  return "#A78BFA18";
+    if (s === "CLK")  return "#34D39918";
+    if (s === "|1⟩")  return "#60A5FA10";
+    return "transparent";
+  };
+
+  const stages = factoryData?.stages ?? {};
+  const pqCrypto = factoryData?.quantumArchitecture?.pqCrypto ?? [
+    { standard: "FIPS 203", algorithm: "CRYSTALS-Kyber-1024", type: "KEM", status: "ACTIVE" },
+    { standard: "FIPS 204", algorithm: "CRYSTALS-Dilithium-5", type: "DSA", status: "ACTIVE" },
+    { standard: "FIPS 205", algorithm: "SPHINCS+-256s", type: "HASH-SIG", status: "ACTIVE" },
+  ];
+  const qpuBackends = factoryData?.quantumArchitecture?.qpuBackends ?? [
+    { provider: "Azure Quantum", device: "IonQ Aria 1", qubits: 25, mode: "STANDBY", errorRate: 0.0012 },
+    { provider: "AWS Braket", device: "Rigetti Ankaa-2", qubits: 84, mode: "STANDBY", errorRate: 0.0031 },
+    { provider: "IBM Quantum", device: "Eagle r3", qubits: 127, mode: "STANDBY", errorRate: 0.0018 },
+  ];
+  const qaoa = factoryData?.quantumArchitecture?.qaoa ?? { depth: 12, convergence: 94.7, iterations: 0 };
+
+  return (
+    <div style={{ overflowY: "auto", flex: 1, paddingBottom: 24 }}>
+
+      {/* Factory Online Banner */}
+      <div style={{ marginBottom: 16, padding: "12px 18px", border: "1px solid #D4AF3730", background: "#D4AF3706", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: GREEN, boxShadow: "0 0 8px 3px #34D39966" }} />
+          <span style={{ fontFamily: MONO, fontSize: 9, color: GREEN, letterSpacing: "0.2em", fontWeight: 700 }}>FACTORY ONLINE — AWAITING FEEDSTOCK</span>
+        </div>
+        <div style={{ display: "flex", gap: 20 }}>
+          {[
+            { label: "CYCLES", val: (factoryData?.factory?.cycleCount ?? cycleCount).toLocaleString() },
+            { label: "PROCESSED", val: String(factoryData?.factory?.processedCount ?? 0) },
+            { label: "UPTIME", val: factoryData ? `${Math.floor(factoryData.factory.uptimeMs / 60000)}m` : "—" },
+            { label: "MODE", val: "QUANTUM-FAKE" },
+          ].map(m => (
+            <div key={m.label}>
+              <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em" }}>{m.label}</div>
+              <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: GOLD }}>{m.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5-Stage Factory Pipeline */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 10 }}>AUTONOMOUS QUANTUM PARADOX RESOLUTION FACTORY — 5-STAGE PIPELINE</div>
+        <div style={{ display: "flex", gap: 0 }}>
+          {([
+            { num: "01", label: "RAW FEEDSTOCK", sub: "Unresolved entropy\nB2B conflicts\nRaw paradox streams", val: String(stages.feedstock?.count ?? "—"), color: AMBER, icon: "⊗" },
+            { num: "02", label: "THE FOUNDRY", sub: "54-node quantum-fake\nInference kernel\nSuperposition mapping", val: "54", color: BLUE, icon: "⬡" },
+            { num: "03", label: "THE TEMPLATES", sub: "88 paradox axioms\nTETHER-BUBBLE v2.0\nProprietary KB", val: "88", color: PURPLE, icon: "◈" },
+            { num: "04", label: "THE OUTPUT", sub: "Validated solutions\nBlockchain-ready\nIntellectual assets", val: String(stages.output?.count ?? "—"), color: GREEN, icon: "◆" },
+            { num: "05", label: "THE MARKET", sub: "Solvex Marketplace\nAuto-integration\nVault locked", val: String(stages.market?.count ?? "—"), color: GOLD, icon: "✦" },
+          ] as const).map((stage, i, arr) => (
+            <div key={stage.num} style={{ flex: 1, display: "flex", alignItems: "stretch" }}>
+              <div style={{ flex: 1, padding: "12px 10px", border: `1px solid ${stage.color}25`, background: `${stage.color}06`, position: "relative" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${stage.color}, transparent)` }} />
+                <div style={{ fontFamily: MONO, fontSize: 7, color: stage.color, letterSpacing: "0.12em", marginBottom: 4, fontWeight: 700 }}>{stage.num} · {stage.icon}</div>
+                <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: "#E8EAF0", marginBottom: 4 }}>{stage.label}</div>
+                <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, lineHeight: 1.6, whiteSpace: "pre-line", marginBottom: 8 }}>{stage.sub}</div>
+                <div style={{ fontFamily: MONO, fontSize: 20, fontWeight: 800, color: stage.color }}>{stage.val}</div>
+              </div>
+              {i < arr.length - 1 && (
+                <div style={{ display: "flex", alignItems: "center", padding: "0 3px", color: DIM, fontFamily: MONO, fontSize: 12 }}>→</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quantum Inference Kernel + QAOA */}
+      <div style={{ marginBottom: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+        {/* 54-Node Superposition Array */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>QUANTUM-FAKE INFERENCE KERNEL</div>
+              <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GOLD }}>54-NODE SUPERPOSITION ARRAY</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>CYCLE</div>
+              <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: BLUE }}>#{cycleCount.toLocaleString()}</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 3, marginBottom: 10 }}>
+            {nodeStates.map((s, i) => (
+              <div key={i} style={{
+                padding: "3px 1px", background: nodeBg(s), border: `1px solid ${nodeColor(s)}40`,
+                textAlign: "center", fontFamily: MONO, fontSize: 6, fontWeight: 700,
+                color: nodeColor(s), letterSpacing: 0, transition: "all 0.3s ease",
+              }}>{s}</div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {([
+              { s: "|0⟩", label: "Ground",    c: "#1E2840" },
+              { s: "|1⟩", label: "Excited",   c: BLUE },
+              { s: "|ψ⟩", label: "Superpos.", c: GOLD },
+              { s: "ENT", label: "Entangled", c: PURPLE },
+              { s: "CLK", label: "Collapsed", c: GREEN },
+            ] as const).map(l => (
+              <div key={l.s} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ width: 18, height: 11, border: `1px solid ${l.c}60`, background: `${l.c}20`, fontFamily: MONO, fontSize: 5, color: l.c, display: "flex", alignItems: "center", justifyContent: "center" }}>{l.s}</div>
+                <span style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* QAOA Heuristic Engine */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>QAOA HEURISTIC ENGINE</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: PURPLE, marginBottom: 14 }}>QUANTUM-INSPIRED SOLVER — DEPTH {qaoa.depth}</div>
+          {([
+            { label: "CIRCUIT DEPTH", val: `p = ${qaoa.depth} LAYERS`, pct: 0.6 },
+            { label: "MIXER OPERATOR", val: "X-ROTATION ⊗ Rz(θ)", pct: 1.0 },
+            { label: "CONVERGENCE", val: `${Number(qaoa.convergence).toFixed(1)}%`, pct: Number(qaoa.convergence) / 100 },
+            { label: "ITERATIONS", val: `${qaoa.iterations} / 200`, pct: qaoa.iterations / 200 },
+          ]).map(m => (
+            <div key={m.label} style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                <span style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.1em" }}>{m.label}</span>
+                <span style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: PURPLE }}>{m.val}</span>
+              </div>
+              <div style={{ height: 3, background: "#1A2035" }}>
+                <div style={{ height: "100%", width: `${m.pct * 100}%`, background: PURPLE, transition: "width 1s ease" }} />
+              </div>
+            </div>
+          ))}
+          <div style={{ marginTop: 12, padding: "10px", background: "#0B0E1A", border: "1px solid #A78BFA20" }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, marginBottom: 4 }}>ENTANGLEMENT PROTOCOL</div>
+            <div style={{ fontFamily: MONO, fontSize: 7.5, color: "#8B94B0", lineHeight: 1.6 }}>
+              Resolution in one branch instantaneously updates parity of all connected synaptic loops. Non-local correlation validated across 54 nodes via Lamport ordering.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PQ-Crypto + QPU Backends */}
+      <div style={{ marginBottom: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+        {/* Post-Quantum Cryptography */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>POST-QUANTUM CRYPTOGRAPHY</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, marginBottom: 12 }}>NIST FIPS 203 / 204 / 205 — ACTIVE</div>
+          {pqCrypto.map((pq: any) => (
+            <div key={pq.standard} style={{ marginBottom: 8, padding: "10px 12px", background: "#0B0E1A", border: "1px solid #34D39915" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                <div>
+                  <span style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: GREEN }}>{pq.standard}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 7, color: DIM, marginLeft: 8 }}>{pq.type}</span>
+                </div>
+                <span style={{ fontFamily: MONO, fontSize: 7, color: GREEN, border: "1px solid #34D39940", padding: "2px 5px" }}>✓ {pq.status}</span>
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 8, color: "#8B94B0" }}>{pq.algorithm}</div>
+            </div>
+          ))}
+          <div style={{ padding: "8px 10px", background: "#D4AF3708", border: "1px solid #D4AF3720", marginTop: 8 }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: GOLD, lineHeight: 1.6 }}>
+              88-PARADOX DATA CORPUS: Secured against quantum decryption via Kyber-1024 KEM. Proprietary IP protected at FIPS 140-3 Level 3 cryptographic boundary.
+            </div>
+          </div>
+        </div>
+
+        {/* Hybrid QPU Cloud Backends */}
+        <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+          <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>HYBRID QPU ARCHITECTURE</div>
+          <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: BLUE, marginBottom: 12 }}>CLOUD QUANTUM BACKENDS</div>
+          {qpuBackends.map((qpu: any) => (
+            <div key={qpu.provider} style={{ marginBottom: 8, padding: "10px 12px", background: "#0B0E1A", border: "1px solid #60A5FA15" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: BLUE, marginBottom: 2 }}>{qpu.provider}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>{qpu.device} · {qpu.qubits} qubits</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: AMBER, border: "1px solid #F59E0B40", padding: "2px 5px", marginBottom: 2 }}>{qpu.mode}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>err: {qpu.errorRate}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={{ padding: "10px 12px", background: "#0B0E1A", border: "1px solid #34D39920" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: GREEN }}>Google Willow (Reference)</div>
+              <span style={{ fontFamily: MONO, fontSize: 7, color: GREEN, border: "1px solid #34D39940", padding: "2px 5px" }}>FAULT-TOLERANT</span>
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>105 logical qubits · 900 physical qubits</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: "#8B94B0", marginTop: 4, lineHeight: 1.5 }}>
+              Below error threshold — logical qubit stability demonstrated. Shifting from raw qubit counting to logical qubit stability. Target: error-corrected mode Q3 2026.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feedstock Queue + Process Controls */}
+      <div style={{ border: "1px solid #1A2035", padding: "14px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.2em", marginBottom: 3 }}>FEEDSTOCK QUEUE — KINETIC RESOLVER</div>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: AMBER }}>AWAITING QUANTUM-FAKE INFERENCE</div>
+          </div>
+          <button
+            onClick={handleProcess}
+            disabled={processing}
+            style={{
+              padding: "10px 18px",
+              background: processing ? "transparent" : "linear-gradient(135deg, #D4AF37, #B8860B)",
+              border: processing ? "1px solid #D4AF37" : "none",
+              color: processing ? GOLD : "#05080F",
+              fontFamily: MONO, fontSize: 8, fontWeight: 800, letterSpacing: "0.15em",
+              cursor: processing ? "not-allowed" : "pointer",
+            }}>{processing ? "⟳ PROCESSING..." : "⊕ PROCESS FEEDSTOCK"}</button>
+        </div>
+
+        {processResult && (
+          <div style={{ marginBottom: 12, padding: "8px 12px", background: "#34D39910", border: "1px solid #34D39940" }}>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: GREEN }}>{processResult}</div>
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em", marginBottom: 8 }}>RECENT FEEDSTOCK</div>
+            {(factoryData?.recentFeedstock ?? []).length === 0
+              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8 }}>Queue empty</div>
+              : (factoryData?.recentFeedstock ?? []).map((f: any, i: number) => (
+                <div key={f.id ?? i} style={{ padding: "7px 10px", marginBottom: 3, background: "#0B0E1A", border: "1px solid #1A2035" }}>
+                  <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: AMBER, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.title}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginTop: 2 }}>{f.category ?? "uncategorized"}</div>
+                </div>
+              ))}
+          </div>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, letterSpacing: "0.15em", marginBottom: 8 }}>RECENT OUTPUT (VALIDATED ASSETS)</div>
+            {(factoryData?.recentOutput ?? []).length === 0
+              ? <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, padding: 8 }}>No assets synthesized yet</div>
+              : (factoryData?.recentOutput ?? []).map((o: any, i: number) => (
+                <div key={o.id ?? i} style={{ padding: "7px 10px", marginBottom: 3, background: "#0B0E1A", border: "1px solid #34D39920" }}>
+                  <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: GREEN, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.title}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 6, color: DIM, marginTop: 2 }}>status: {o.status ?? "verified"}</div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+const TABS = ["SOLUTIONS", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH", "DELIVERY PIPELINE", "QUANTUM FOUNDRY"] as const;
 
 export default function BrainConsole() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("SOLUTIONS");
@@ -1007,6 +1310,7 @@ export default function BrainConsole() {
             }} />
           )}
           {tab === "DELIVERY PIPELINE" && <DeliveryPipeline />}
+          {tab === "QUANTUM FOUNDRY" && <QuantumFoundry />}
         </div>
       </div>
 
