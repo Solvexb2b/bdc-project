@@ -613,7 +613,7 @@ export default function BrainConsole() {
           <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(212,175,55,0.02) 39px,rgba(212,175,55,0.02) 40px)" }} />
           <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 2 }}>SYSTEM ID: SOLVEX-CORE-01 &nbsp;|&nbsp; U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
+              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.25em", color: "#3D4560", marginBottom: 2 }}>SYSTEM ID: SOLVEX-CORE-02 &nbsp;|&nbsp; U.A.R.E.F.A.K.E. ENGINE CONSOLE</div>
               <div style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: "#D8DAE8", letterSpacing: "0.04em", marginBottom: 3 }}>dAIsy haMINJA Brain Console</div>
               <div style={{ fontFamily: MONO, fontSize: 7.5, letterSpacing: "0.12em", color: MID }}>Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine &nbsp;·&nbsp; 54-Node Recursive Pipeline</div>
             </div>
@@ -651,20 +651,27 @@ export default function BrainConsole() {
             ))}
           </div>
 
-          {/* APD-01 Directive Strip */}
-          <div style={{ position: "relative", zIndex: 1, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(212,175,55,0.12)", display: "flex", gap: 0, flexWrap: "wrap" }}>
-            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: GOLD, marginBottom: 4, width: "100%" }}>APD-01 — AUTONOMOUS PROTOCOL DIRECTIVE</div>
-            {[
-              { tag: "CONSENSUS MANDATE", desc: "No Vault/Escrow execution without L5 match + L6 SOC 2 cert" },
-              { tag: "RECURSIVE ANALYSIS", desc: "59th-degree paradox → 54-node analysis, priority shifts L4→L7" },
-              { tag: "NON-REPUDIATION", desc: "All actions cryptographically signed, L1 Lamport-ordered" },
-              { tag: "PARADOX RESOLUTION", desc: "Volatile code diverted to Paradox Box for Sandbox isolation" },
-            ].map(d => (
-              <div key={d.tag} style={{ marginRight: 28, marginBottom: 4 }}>
-                <span style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: AMBER, letterSpacing: "0.1em" }}>{d.tag}: </span>
-                <span style={{ fontFamily: MONO, fontSize: 7, color: DIM }}>{d.desc}</span>
-              </div>
-            ))}
+          {/* APD-01 Directive Strip — CORE-02 8-directive manifest */}
+          <div style={{ position: "relative", zIndex: 1, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(212,175,55,0.12)" }}>
+            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: GOLD, marginBottom: 8 }}>APD-01 — AUTONOMOUS PROTOCOL DIRECTIVE &nbsp;·&nbsp; SOLVEX-CORE-02</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 32px" }}>
+              {[
+                { num: "01", tag: "AUTONOMOUS CORE",        desc: "dAIsy manages paradox synthesis, marketplace bounties and autonomic self-healing" },
+                { num: "02", tag: "COMPLIANCE HARDWARE",    desc: "NIST/SOC 2/ISO 27001 enforced at binary level — non-compliant node self-isolates until L7 validates" },
+                { num: "03", tag: "ZK PROXY",               desc: "Credentials never in LLM context — agent sends action requests; Proxy executes via secure-vault" },
+                { num: "04", tag: "OBSERVABILITY & TRACE",  desc: "Each of 54 nodes produces a cryptographic hash; paradox paths pinned to Solana ledger" },
+                { num: "05", tag: "FAIL-SAFE",              desc: "500ms latency or compliance drift → instant System-Static mode; Watchdog monitors all 54 nodes" },
+                { num: "06", tag: "PARADOX LIMIT",          desc: "59th-degree depth cap; breach → Force-Collapse synthesis into new S-Solution + Marketplace update" },
+                { num: "07", tag: "NON-REPUDIATION",        desc: "All agentic actions signed by internal private key and L1 Lamport-ordered for chronological audit" },
+                { num: "08", tag: "MARKETPLACE ESCROW",     desc: "72hr hold via /api/vault/process — no Vault/Escrow release without L5 Consensus + L6 SOC 2 match" },
+              ].map(d => (
+                <div key={d.num} style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
+                  <span style={{ fontFamily: MONO, fontSize: 6.5, color: DIM, minWidth: 14, paddingTop: 1 }}>{d.num}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 6.5, fontWeight: 700, color: AMBER, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>{d.tag}: </span>
+                  <span style={{ fontFamily: MONO, fontSize: 6.5, color: "#4B5568", lineHeight: 1.5 }}>{d.desc}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
