@@ -177,6 +177,23 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-073", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Atomic Commit Protocol Guard",                    description: "Coordinates multi-node state modifications to ensure they either succeed fully or fail without side effects." },
   { id: "S-074", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Consensus Sequence Nonce Counter",                description: "Enforces sequential transaction application to eliminate replay attacks." },
   { id: "S-075", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Local DB Transaction Commit Journal",             description: "Records critical state transitions in an append-only journal file before writing to disk." },
+
+  // ─── LAYER 6: REGULATORY COMPLIANCE & SOC 2 AUDITING (S-076–S-090) ──────
+  { id: "S-076", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Continuous Compliance Enclave Monitor",            description: "Evaluates active kernel states against NIST SP 800-53 security controls in real-time." },
+  { id: "S-077", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "SOC 2 Audit Telemetry Logger",                     description: "Appends cryptographically verified system events to an immutable, read-only system log partition." },
+  { id: "S-078", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "ISO 27001 Ephemeral Cryptographic Enforcer",       description: "Mandates the rotation of all active node communication keys every 300 seconds." },
+  { id: "S-079", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "NIST SP 800-53 Boot Attestator",                   description: "Performs secure boot code validation, ensuring no unauthorized boot files are run." },
+  { id: "S-080", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "SOC 2 Access Control Auditor",                     description: "Verifies user permission tokens dynamically against access policy matrices." },
+  { id: "S-081", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Sovereign Regulatory Policy Verifier",             description: "Automatically compiles administrative compliance goals into machine-executable code tests." },
+  { id: "S-082", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Continuous Audit Trail Cryptographic Seal",        description: "Hashes system logs periodically and publishes the hash to the distributed ledger for tamper-proofing." },
+  { id: "S-083", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Memory Boundary Access Shield",                    description: "Blocks read attempts of system data from outside authorized enclaves, satisfying NIST data-isolation mandates." },
+  { id: "S-084", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "ISO 27001 Incident Alert System",                  description: "Instantly alerts the mesh network of any physical node tampering or localized security violations." },
+  { id: "S-085", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "NIST SP 800-53 Boundary Protection Guard",        description: "Isolates incoming network interfaces from critical microkernel code segments." },
+  { id: "S-086", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Continuous Configuration Drift Rectifier",        description: "Automatically reverts any modified system settings to their original, certified, compliant state." },
+  { id: "S-087", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Audit-Log Compaction Guard",                       description: "Compresses verified SOC 2 logs using lossless algorithms to minimize memory consumption while preserving details." },
+  { id: "S-088", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "NIST SP 800-53 Least-Privilege Assigner",         description: "Temporarily elevates permissions only when executing highly critical system tasks, de-escalating immediately after." },
+  { id: "S-089", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "ISO 27001 Vulnerability Scanner",                  description: "Routinely scans the sandbox and dynamic library registry for deprecated or vulnerable functions." },
+  { id: "S-090", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Sovereign Compliance Self-Reporting Agent",        description: "Compiles complete, formatted compliance reports, proving ongoing SOC 2 adherence automatically." },
 ];
 
 export const SOLUTION_LAYERS = [
@@ -185,6 +202,7 @@ export const SOLUTION_LAYERS = [
   { num: 3, name: "Hardware Orchestration & Bare-Metal Access", solutions: 15, color: "#34D399", symbol: "⬢", desc: "Direct register mapping, DMA pipelines, thread pinning and zero-copy hardware access" },
   { num: 4, name: "Ad-Hoc Routing, Mesh & DHT Networking",      solutions: 15, color: "#F59E0B", symbol: "◈", desc: "AODV self-healing mesh, DHT finger tables, pheromone decay and opportunistic forwarding" },
   { num: 5, name: "Consensus Mechanics & Distributed State",    solutions: 15, color: "#F87171", symbol: "⬟", desc: "Fractal consensus, CRDT, BFT validation, quorum adjustment and gossip synchronization" },
+  { num: 6, name: "Regulatory Compliance & SOC 2 Auditing",    solutions: 15, color: "#D4AF37", symbol: "⚖", desc: "NIST SP 800-53, SOC 2, ISO 27001 — continuous audit trails, boot attestation and drift rectification" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
