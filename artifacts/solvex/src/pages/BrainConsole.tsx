@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "../components/DashboardLayout";
+import { DaisyAvatar } from "../components/DaisyAvatar";
 import { PARADOXES } from "../data/brainData";
 
 const MONO = "'IBM Plex Mono', monospace";
@@ -451,10 +452,10 @@ function OutboundAuth({ chat }: { chat: (msg: string) => void }) {
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
-const TABS = ["COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
+const TABS = ["AVATAR", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
 
 export default function BrainConsole() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("COMM-LINK");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("AVATAR");
   const [pulse, setPulse] = useState(false);
   const [homeostasis] = useState(98.4);
 
@@ -531,6 +532,11 @@ export default function BrainConsole() {
 
         {/* Tab Content */}
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          {tab === "AVATAR" && (
+            <div style={{ flex: 1, border: "1px solid rgba(56,189,248,0.2)", overflow: "hidden", position: "relative" }}>
+              <DaisyAvatar />
+            </div>
+          )}
           {tab === "COMM-LINK" && <CommLink />}
           {tab === "SANDBOX UI" && <SandboxUI />}
           {tab === "ROI ANALYTICS" && <RoiAnalytics />}
