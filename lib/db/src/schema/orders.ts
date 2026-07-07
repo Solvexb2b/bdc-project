@@ -12,6 +12,8 @@ export const ordersTable = pgTable("orders", {
   walletAddress: text("wallet_address").notNull(),
   transactionHash: text("transaction_hash"),
   licenseKey: text("license_key"),
+  stripeSessionId: text("stripe_session_id"),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   deliveredAt: timestamp("delivered_at", { withTimezone: true }),

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useParams } from "wouter";
-import { useGetProduct, useCreateOrder } from "@workspace/api-client-react";
+import { useGetProduct } from "@workspace/api-client-react";
 import { ValidationSandbox } from "@/components/ValidationSandbox";
 import { Link } from "wouter";
 
@@ -15,19 +15,78 @@ const MONO: React.CSSProperties = { fontFamily: "'IBM Plex Mono', monospace" };
 const SERIF: React.CSSProperties = { fontFamily: "'Playfair Display', serif" };
 
 const CURRENCIES = [
-  { key: "eth",  label: "ETH",  icon: "Ξ" },
-  { key: "usdc", label: "USDC", icon: "$" },
-  { key: "btc",  label: "BTC",  icon: "₿" },
+  { key: "card", label: "CARD",  icon: "💳" },
+  { key: "eth",  label: "ETH",   icon: "Ξ" },
+  { key: "usdc", label: "USDC",  icon: "$" },
+  { key: "btc",  label: "BTC",   icon: "₿" },
 ] as const;
+
+type Currency = "card" | "eth" | "usdc" | "btc";
+
+interface CryptoPaymentInfo {
+  orderId: string;
+  currency: string;
+  amount: string;
+  walletAddress: string;
+  instructions: string[];
+  rateNote: string;
+}
 
 export default function ProductDetail() {
   const params = useParams();
   const id = params.id as string;
   const { data: product, isLoading } = useGetProduct(id);
-  const createOrder = useCreateOrder();
-  const [currency, setCurrency] = useState<"eth" | "usdc" | "btc">("eth");
-  const [ordered, setOrdered] = useState(false);
+  const [currency, setCurrency] = useState<Currency>("card");
   const [ordering, setOrdering] = useState(false);
+  const [cryptoInfo, setCryptoInfo] = useState<CryptoPaymentInfo | null>(null);
+  const [txHash, setTxHash] = useState("");
+  const [txSubmitted, setTxSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  }
+
+  async function handleOrder() {
+    if (!product) return;
+    setOrdering(true);
+    setError(null);
+    try {
+      if (currency === "card") {
+        const resp = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: product.id }),
+        });
+        const data = await resp.json();
+        if (data.url) { window.location.href = data.url; return; }
+        setError(data.error ?? "Stripe checkout failed");
+      } else {
+        const resp = await fetch("/api/crypto/payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: product.id, currency }),
+        });
+        const data = await resp.json();
+        if (resp.ok) { setCryptoInfo(data); }
+        else { setError(data.error ?? "Could not create payment intent"); }
+      }
+    } catch (e: any) {
+      setError(e.message ?? "Network error");
+    }
+    setOrdering(false);
+  }
+
+  async function submitTxHash() {
+    if (!cryptoInfo || !txHash.trim()) return;
+    const resp = await fetch(`/api/crypto/verify/${cryptoInfo.orderId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ txHash: txHash.trim() }),
+    });
+    if (resp.ok) setTxSubmitted(true);
+  }
 
   if (isLoading) return (
     <DashboardLayout>
@@ -49,17 +108,11 @@ export default function ProductDetail() {
   const col = meta.color;
 
   const priceMap: Record<string, string | undefined> = {
+    card: product.priceUsdc ? "$" + product.priceUsdc + " USD" : undefined,
     eth:  product.priceEth  ? product.priceEth  + " ETH"  : undefined,
     usdc: product.priceUsdc ? product.priceUsdc + " USDC" : undefined,
     btc:  product.priceBtc  ? product.priceBtc  + " BTC"  : undefined,
   };
-
-  async function handleOrder() {
-    setOrdering(true);
-    try { await (createOrder as any).mutateAsync({ paymentMethod: currency, productId: product!.id }); setOrdered(true); }
-    catch { /* silently ignore */ }
-    setOrdering(false);
-  }
 
   return (
     <DashboardLayout>
@@ -164,7 +217,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Right Column — Acquisition Panel */}
-          <div style={{ width: 280, flexShrink: 0 }}>
+          <div style={{ width: 300, flexShrink: 0 }}>
 
             {/* Price Card */}
             <div style={{ background: "#07091A", border: "1px solid " + col + "40", marginBottom: 12, position: "relative", overflow: "hidden" }}>
@@ -174,49 +227,98 @@ export default function ProductDetail() {
                 <div style={{ ...SERIF, fontSize: 13, color: "#FFFFFF" }}>72-Hour Escrow · Vault Hold Model</div>
               </div>
               <div style={{ padding: "16px 20px" }}>
+
                 {/* Currency selector */}
-                <div style={{ display: "flex", gap: 4, marginBottom: 16 }}>
+                <div style={{ display: "flex", gap: 3, marginBottom: 16, flexWrap: "wrap" }}>
                   {CURRENCIES.map(c => (
-                    <button key={c.key} onClick={() => setCurrency(c.key)} style={{
-                      flex: 1, padding: "7px 4px",
+                    <button key={c.key} onClick={() => { setCurrency(c.key); setCryptoInfo(null); setError(null); }} style={{
+                      flex: "1 1 auto", padding: "7px 4px",
                       background: currency === c.key ? col + "15" : "transparent",
                       border: currency === c.key ? "1px solid " + col : "1px solid #1A2035",
                       color: currency === c.key ? col : "#5B6480",
-                      ...MONO, fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", cursor: "pointer",
+                      ...MONO, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", cursor: "pointer",
                     }}>{c.icon} {c.label}</button>
                   ))}
                 </div>
 
                 {/* Price display */}
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ ...MONO, fontSize: 28, fontWeight: 600, color: "#FFFFFF", marginBottom: 4 }}>
+                  <div style={{ ...MONO, fontSize: 26, fontWeight: 600, color: "#FFFFFF", marginBottom: 4 }}>
                     {priceMap[currency] ?? "—"}
                   </div>
                   <div style={{ ...MONO, fontSize: 9, color: "#5B6480" }}>
-                    {currency === "eth"  && product.priceUsdc && "≈ " + product.priceUsdc + " USDC"}
+                    {currency === "card" && "Secure card payment via Stripe"}
+                    {currency === "eth"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD"}
                     {currency === "usdc" && product.priceEth  && "≈ " + product.priceEth  + " ETH"}
-                    {currency === "btc"  && product.priceUsdc && "≈ " + product.priceUsdc + " USDC"}
+                    {currency === "btc"  && product.priceUsdc && "≈ $" + product.priceUsdc + " USD"}
                   </div>
                 </div>
 
-                {/* Acquire button */}
-                {ordered ? (
-                  <div style={{
-                    padding: "12px", textAlign: "center",
-                    background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.4)",
-                    ...MONO, fontSize: 10, color: "#34D399", letterSpacing: "0.16em",
-                  }}>
-                    ✓ ORDER PLACED — 72H ESCROW ACTIVE
+                {/* Error */}
+                {error && (
+                  <div style={{ marginBottom: 12, padding: "10px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", ...MONO, fontSize: 9, color: "#F87171" }}>
+                    ⚠ {error}
                   </div>
-                ) : (
+                )}
+
+                {/* Crypto payment details (after initiation) */}
+                {cryptoInfo && !txSubmitted && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.16em", color: col, marginBottom: 8 }}>SEND PAYMENT TO:</div>
+                    <div style={{ background: "#0A0D18", border: "1px solid #1A2035", padding: "10px", marginBottom: 8 }}>
+                      <div style={{ ...MONO, fontSize: 9, color: "#FFFFFF", wordBreak: "break-all", marginBottom: 6 }}>{cryptoInfo.walletAddress}</div>
+                      <button onClick={() => copyToClipboard(cryptoInfo.walletAddress)} style={{
+                        background: "transparent", border: "1px solid #1A2035", color: "#5B6480",
+                        ...MONO, fontSize: 8, padding: "4px 8px", cursor: "pointer", letterSpacing: "0.12em",
+                      }}>{copied ? "✓ COPIED" : "COPY ADDRESS"}</button>
+                    </div>
+                    <div style={{ ...MONO, fontSize: 9, color: "#D4AF37", marginBottom: 6 }}>
+                      Amount: {cryptoInfo.amount} {cryptoInfo.currency}
+                    </div>
+                    <div style={{ ...MONO, fontSize: 8, color: "#5B6480", marginBottom: 10 }}>{cryptoInfo.rateNote}</div>
+                    <div style={{ ...MONO, fontSize: 8, letterSpacing: "0.14em", color: "#3D4560", marginBottom: 6 }}>SUBMIT TX HASH AFTER SENDING:</div>
+                    <input
+                      value={txHash}
+                      onChange={e => setTxHash(e.target.value)}
+                      placeholder="0x..."
+                      style={{
+                        width: "100%", background: "#0A0D18", border: "1px solid #1A2035",
+                        color: "#FFFFFF", ...MONO, fontSize: 9, padding: "8px",
+                        marginBottom: 8, boxSizing: "border-box",
+                      }}
+                    />
+                    <button onClick={submitTxHash} disabled={!txHash.trim()} style={{
+                      width: "100%", padding: "10px",
+                      background: txHash.trim() ? "rgba(52,211,153,0.15)" : "transparent",
+                      border: "1px solid rgba(52,211,153,0.4)", color: "#34D399",
+                      ...MONO, fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", cursor: "pointer",
+                    }}>CONFIRM PAYMENT →</button>
+                  </div>
+                )}
+
+                {/* Tx submitted */}
+                {txSubmitted && (
+                  <div style={{
+                    padding: "12px", textAlign: "center", marginBottom: 12,
+                    background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.4)",
+                    ...MONO, fontSize: 10, color: "#34D399", letterSpacing: "0.14em",
+                  }}>
+                    ✓ TX SUBMITTED — AWAITING VERIFICATION
+                  </div>
+                )}
+
+                {/* Acquire button (hidden once crypto info shown) */}
+                {!cryptoInfo && !txSubmitted && (
                   <button onClick={handleOrder} disabled={ordering} style={{
                     width: "100%", padding: "12px",
-                    background: ordering ? "#3D4560" : "linear-gradient(135deg, #D4AF37, #B8860B)",
-                    border: "none", color: "#05080F",
+                    background: ordering ? "#3D4560" : currency === "card"
+                      ? "linear-gradient(135deg, #6366F1, #4F46E5)"
+                      : "linear-gradient(135deg, #D4AF37, #B8860B)",
+                    border: "none", color: "#FFFFFF",
                     ...MONO, fontSize: 10, fontWeight: 900, letterSpacing: "0.18em",
                     cursor: ordering ? "not-allowed" : "pointer",
                   }}>
-                    {ordering ? "PROCESSING..." : "INITIATE ACQUISITION →"}
+                    {ordering ? "PROCESSING..." : currency === "card" ? "PAY WITH CARD →" : "INITIATE ACQUISITION →"}
                   </button>
                 )}
               </div>
