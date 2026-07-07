@@ -73,10 +73,13 @@ function tetherSnapshot() {
 // entropy = openProblems / totalProblems
 // 0.0 → fully resolved (homeostasis 100%)
 // 1.0 → no solutions at all (homeostasis 0%)
+// NOTE: `solution_submitted` is NOT counted as open — the heuristic kernel has
+// already synthesized a resolution vector. Those problems await hardware confirmation,
+// not further synthesis. Only truly unsolved `open` problems drive entropy.
 async function calculateEntropy(): Promise<number> {
   const all = await db.select().from(problemsTable);
   if (all.length === 0) return 0;
-  const open = all.filter(p => p.status === "open" || p.status === "solution_submitted");
+  const open = all.filter(p => p.status === "open");
   return open.length / all.length;
 }
 
@@ -261,6 +264,11 @@ export const getKineticState = (): KineticState & {
 
 export const runKineticCore = (): void => {
   state.status = "STABLE";
+
+  // Seed collapseCount from DB so restarts don't reset the counter
+  db.select().from(solutionsTable)
+    .then(rows => { state.collapseCount = rows.filter(r => r.solverId === "0").length; })
+    .catch(() => { /* non-fatal */ });
 
   // Node 0 is the coordinator — it runs synaptic entropy on behalf of the grid
   const loop = async () => {
