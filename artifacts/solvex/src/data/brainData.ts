@@ -1,0 +1,110 @@
+export interface Paradox {
+  id: number;
+  name: string;
+  description: string;
+  chamber: 1 | 2 | 3 | 4 | 5;
+}
+
+export interface BrainProduct {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+export const PARADOXES: Paradox[] = [
+  // ─── CHAMBER I: FOUNDATIONS (1–13) ───────────────────────────────────────
+  { id: 1,  chamber: 1, name: "Isolation vs Consensus (Zamin-Lock)", description: "Decides how localized nodes establish micro-consensus without full network handshakes." },
+  { id: 2,  chamber: 1, name: "Entropy vs Homeostasis", description: "Balancing local state thermal decay against background system maintenance protocols." },
+  { id: 3,  chamber: 1, name: "Latency vs Autonomy", description: "Allows edge computation clusters to self-determine logic branches during partition isolation." },
+  { id: 4,  chamber: 1, name: "Epoch Drift vs Chrono-Consistency", description: "Realigns local timestamps across high-latency mesh nodes without central authority." },
+  { id: 5,  chamber: 1, name: "Decentralized Identity vs Zero-Knowledge Anonymity", description: "Guarantees absolute auditability of node actions while keeping physical source identities hidden." },
+  { id: 6,  chamber: 1, name: "Local Compute Superiority vs Mesh Resource Pools", description: "Pins security-critical operations locally while offloading mathematical solvers to the idle mesh." },
+  { id: 7,  chamber: 1, name: "Shard Parity Overhead vs Network Bandwidth", description: "Minimizes redundancy parity packets to conserve bandwidth while ensuring total reconstruction resilience." },
+  { id: 8,  chamber: 1, name: "Mutable State Progression vs Immutable Ledger History", description: "Resolves local state updates with structural ledger history via non-interactive zero-knowledge proofs." },
+  { id: 9,  chamber: 1, name: "Redundant Routing Pathing vs Traffic Congestion", description: "Dynamically thins active routing tunnels during optimal throughput to prevent signal echoes." },
+  { id: 10, chamber: 1, name: "Pheromone Decay vs Continuous Signal Amplification", description: "Enforces continuous state awareness without saturating the local spatial mesh with stale routing indicators." },
+  { id: 11, chamber: 1, name: "Enclave Cryptography vs Processing Overhead", description: "Balances secure hardware boot enclaves against low-latency processing budgets." },
+  { id: 12, chamber: 1, name: "Sandboxed Compile Sandbox vs Host System Overhead", description: "Secures high-speed bytecode evaluation without exhausting virtual machine resources." },
+  { id: 13, chamber: 1, name: "Trust vs Protection (Integrity Observability)", description: "Monitors peer execution behavior continuously while maintaining non-invasive operational boundaries." },
+
+  // ─── CHAMBER II: MOTION & TIME (14–23) ──────────────────────────────────
+  { id: 14, chamber: 2, name: "Memory-Entropy Coherence", description: "Ensures that local memory caches remain structurally ordered despite background radioactive interference." },
+  { id: 15, chamber: 2, name: "Deterministic Execution Pathing vs Random Seed Synthesis", description: "Secures cryptographic nonces by synthesizing dynamic system entropy with rigid execution sequences." },
+  { id: 16, chamber: 2, name: "Bubble Boundary Expansion vs Core Node Security", description: "Extends tether fields to ingest external endpoints while preserving core kernel isolation parameters." },
+  { id: 17, chamber: 2, name: "Asynchronous Message Passing vs Synchronous Block Lockout", description: "Prevents deadlocks in distributed thread pools while handling real-time inter-process messaging." },
+  { id: 18, chamber: 2, name: "Consensus Threshold Agreement vs Split-Brain Partitioning", description: "Ensures network consensus can recover autonomously after severe geographical split-brain partitions." },
+  { id: 19, chamber: 2, name: "Microkernel Isolation vs Inter-Process Communication Speed", description: "Achieves memory-safe microkernel domain separation with zero-copy shared memory messaging." },
+  { id: 20, chamber: 2, name: "Dynamic Load Balancing vs Compute Pinning", description: "Redistributes intense compilation tasks without swapping context registers off dedicated cores." },
+  { id: 21, chamber: 2, name: "Peer Trust Coefficient vs Anonymous Mesh Entry", description: "Enforces rapid initial challenge-response cycles for anonymous entries without degrading core mesh speed." },
+  { id: 22, chamber: 2, name: "Failure State Virtualization vs Active Recovery Overhead", description: "Maintains uninterrupted operations by running failure prediction models alongside main execution thread." },
+  { id: 23, chamber: 2, name: "Decentralized Hash Table Lookup Latency vs Routing Integrity", description: "Caches critical hash lookups securely while verifying structural routing signatures." },
+
+  // ─── CHAMBER III: CHOICE & SELF (24–38) ─────────────────────────────────
+  { id: 24, chamber: 3, name: "Ephemeral Thread Spawning vs Thread Pool Exhaustion", description: "Handles unpredictable bursts of transaction triggers using ultra-lightweight virtual coroutine threads." },
+  { id: 25, chamber: 3, name: "Cryptographic Nonce Uniqueness vs Sequence Generation Speed", description: "Generates secure nonces at gigahertz frequencies without risking sequence collisions." },
+  { id: 26, chamber: 3, name: "Pheromone Attractor Alignment vs Signal Repulsion", description: "Uses secondary repelling signals to guide mesh queries away from slow, congested, or misbehaving nodes." },
+  { id: 27, chamber: 3, name: "Local Node Isolation vs Mesh Parity Rebuilding", description: "Rebuilds local storage state using distributed shard parity without reconnecting to the global network." },
+  { id: 28, chamber: 3, name: "Garbage Collection Jitter vs Real-Time System Determinism", description: "Eliminates GC pauses entirely by using localized, deterministic block memory allocation pools." },
+  { id: 29, chamber: 3, name: "Memory Buffer Allocation vs Buffer Overflow Protection", description: "Applies compile-time size contracts to prevent memory bounds violations." },
+  { id: 30, chamber: 3, name: "Clock Synchronization vs Lamport Log Sequence", description: "Integrates physical clock offsets with logical Lamport timestamps to maintain transactional causality." },
+  { id: 31, chamber: 3, name: "Recursive Execution Stack vs Stack Overflow Prevention", description: "Enforces deep recursive mathematical evaluations by converting them to heap-allocated continuations." },
+  { id: 32, chamber: 3, name: "Edge Device Compute Constancy vs Power State Fluctuations", description: "Adapts calculation precision in real-time according to thermal and voltage changes." },
+  { id: 33, chamber: 3, name: "Secure Boot Attestation vs Dynamic Patch Upgrades", description: "Performs real-time, non-blocking integrity verification of hot-swapped microkernel patches." },
+  { id: 34, chamber: 3, name: "Zero-Copy Transport vs Memory Bandwidth Saturation", description: "Routes data through kernel bypass paths to eliminate copy overhead without saturating memory bus throughput." },
+  { id: 35, chamber: 3, name: "Sovereign Tether Expansion vs Core Node Isolation", description: "Grows the active tether field to absorb external endpoints while keeping the kernel partition boundary sealed." },
+  { id: 36, chamber: 3, name: "Gossip Protocol Proliferation vs Message Saturation", description: "Throttles gossip fan-out dynamically to prevent cascade saturation across high-density peer meshes." },
+  { id: 37, chamber: 3, name: "Lamport Timestamp Drift vs Causal Ordering", description: "Corrects Lamport sequence divergence during network partitions without breaking happens-before guarantees." },
+  { id: 38, chamber: 3, name: "Kernel Preemption vs Interrupt Latency", description: "Ensures real-time tasks preempt safely while keeping hardware interrupt service routines below 1μs." },
+
+  // ─── CHAMBER IV: STRUCTURE (39–48) ──────────────────────────────────────
+  { id: 39, chamber: 4, name: "Merkle Path Depth vs Verification Speed", description: "Optimizes Merkle tree branching factors to minimize proof size while maintaining sub-millisecond verification." },
+  { id: 40, chamber: 4, name: "Homomorphic Depth vs Noise Budget Exhaustion", description: "Manages FHE circuit depth to maximize computation layers before ciphertext noise renders results undecodable." },
+  { id: 41, chamber: 4, name: "Zamin-Lock Broadcast vs Selective Disclosure", description: "Controls which locked consensus outputs are broadcast publicly versus withheld for permissioned clients." },
+  { id: 42, chamber: 4, name: "Quorum Size vs Fault Tolerance Threshold", description: "Calibrates voting quorum size to maximize Byzantine fault resilience without degrading commit latency." },
+  { id: 43, chamber: 4, name: "Tether Bubble Density vs Signal Propagation", description: "Limits coordinate bubble density to prevent pheromone signal interference across overlapping tether zones." },
+  { id: 44, chamber: 4, name: "Compile-Time Verification vs Runtime Adaptability", description: "Locks critical execution contracts at compile time while preserving hot-swap capability for dynamic modules." },
+  { id: 45, chamber: 4, name: "Sovereign State Sprawl vs Consensus Compaction", description: "Compresses distributed state sprawl into atomic Chrono-Compaction nodes via non-interactive ZK verification." },
+  { id: 46, chamber: 4, name: "Cross-Shard Atomicity vs Throughput Sharding", description: "Executes atomic cross-shard transactions without serializing the entire shard matrix throughput pipeline." },
+  { id: 47, chamber: 4, name: "Temporal Entropy vs Deterministic Replay", description: "Captures sufficient entropy for security seeds while maintaining full deterministic replay for audit trails." },
+  { id: 48, chamber: 4, name: "Byzantine Equivocation vs Finality Guarantee", description: "Detects and slashes equivocating validators while preserving one-slot finality for honest consensus participants." },
+
+  // ─── CHAMBER V: TRANSCENDENCE (49–53) ────────────────────────────────────
+  { id: 49, chamber: 5, name: "Neural Inference Latency vs Privacy Budget", description: "Bounds differential privacy budget expenditure per inference while maintaining sub-50ms model response SLAs." },
+  { id: 50, chamber: 5, name: "Pheromone Signal Decay vs Memory Persistence", description: "Calibrates pheromone half-life to allow stale route eviction while preserving critical long-term coordinate memory." },
+  { id: 51, chamber: 5, name: "Sovereign Epoch Boundary vs Continuous Execution", description: "Enforces clean epoch transitions for ledger checkpointing without interrupting live transaction processing pipelines." },
+  { id: 52, chamber: 5, name: "Proof-of-Sovereignty vs Decentralized Verification", description: "Proves sovereign execution authority to external verifiers without exposing internal kernel state or identity." },
+  { id: 53, chamber: 5, name: "Axiom Resolution vs Paradox Synthesis", description: "The terminal paradox: resolves all prior 52 paradoxes into a single unified sovereign execution axiom — the dAIsy haMINJA convergence proof." },
+];
+
+export const BRAIN_PRODUCTS: BrainProduct[] = [
+  { id: "SOLVEX-BRAIN-01", name: "Chassis Controller", category: "fundamental", description: "Hardware-level orchestration layer managing bare-metal resource allocation across sovereign execution nodes." },
+  { id: "SOLVEX-BRAIN-02", name: "Memory Controller", category: "fundamental", description: "Deterministic memory space management with compile-time bounds checking and zero-copy buffer allocation." },
+  { id: "SOLVEX-BRAIN-03", name: "Consensus Engine", category: "operational", description: "Autonomous multi-region consensus middleware resolving distributed data-sprawl paradoxes without split-brain anomalies." },
+  { id: "SOLVEX-BRAIN-04", name: "Deterministic Clock Synchronizer", category: "operational", description: "Enforces absolute chronological ordering of sovereign transactions without external NTP dependencies." },
+  { id: "SOLVEX-BRAIN-05", name: "System Initialization Protocol", category: "fundamental", description: "Zero-trust boot sequence with cryptographic attestation at every kernel initialization stage." },
+  { id: "SOLVEX-BRAIN-06", name: "Zero-Sandbox Hardware Access", category: "fundamental", description: "Resides at the binary level, bypassing secondary OS system calls for latency-free hardware orchestration." },
+  { id: "SOLVEX-BRAIN-07", name: "Kernel Sovereignty Axiom", category: "fundamental", description: "Constitutional constraint layer enforcing immutable execution rules across all sovereign compute partitions." },
+  { id: "SOLVEX-BRAIN-08", name: "Compliance-as-a-Service Enclave", category: "ai", description: "Automated continuous verification and self-documenting audit telemetry for NIST SP 800-53, SOC 2, and ISO 27001 enclaves." },
+  { id: "SOLVEX-BRAIN-09", name: "dAIsy haMINJA Sentinel Intelligence Protocol", category: "ai", description: "Autonomous sovereign AI brain governing marketplace operations, paradox resolution, and self-healing execution." },
+  { id: "SOLVEX-BRAIN-10", name: "Autonomous Consensus Engine Middleware", category: "operational", description: "Resolves distributed multi-region data-sprawl paradoxes and prevents split-brain anomalies using localized peer-to-peer consensus." },
+  { id: "SOLVEX-BRAIN-11", name: "ConsensusEngine Autonomous Product Synthesis", category: "ai", description: "AI-driven product assembly pipeline that synthesizes enterprise solutions from the paradox resolution matrix." },
+  { id: "SOLVEX-BRAIN-12", name: "Solvex Black Box Vault", category: "fundamental", description: "Deploys non-custodial, offline-first security enclaves using military-grade cryptographic hashing and local-only ephemeral memory." },
+  { id: "SOLVEX-BRAIN-13", name: "Solvex Envoy Protocol Outbound Pitch Security Suite", category: "operational", description: "End-to-end encrypted outbound communication layer for sovereign data transmission with zero interception surface." },
+];
+
+export const CHAMBER_META = [
+  { num: "I",   name: "FOUNDATIONS",   paradoxes: 13, symbol: "ᚱ", desc: "Proprietary architect-derived solutions — the active processing core", color: "#D4AF37" },
+  { num: "II",  name: "MOTION & TIME", paradoxes: 10, symbol: "☸", desc: "Resolves causal drift in untrusted network environments", color: "#60A5FA" },
+  { num: "III", name: "CHOICE & SELF", paradoxes: 15, symbol: "𓁙", desc: "Manages autonomous decision-making and agentic sovereignty", color: "#A78BFA" },
+  { num: "IV",  name: "STRUCTURE",     paradoxes: 10, symbol: "⬢", desc: "Ensures hardware-level stability for bare-metal execution", color: "#34D399" },
+  { num: "V",   name: "TRANSCENDENCE", paradoxes: 5,  symbol: "👁", desc: "Final reconciliation of all data inputs into absolute output", color: "#F59E0B" },
+];
+
+export function getChamberForParadox(id: number): typeof CHAMBER_META[number] {
+  if (id <= 13) return CHAMBER_META[0];
+  if (id <= 23) return CHAMBER_META[1];
+  if (id <= 38) return CHAMBER_META[2];
+  if (id <= 48) return CHAMBER_META[3];
+  return CHAMBER_META[4];
+}
