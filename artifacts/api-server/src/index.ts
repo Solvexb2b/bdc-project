@@ -4,6 +4,7 @@ import { startHeartbeat } from "./lib/heartbeat";
 import { initializeWorkerPool } from "./lib/workers";
 import { initVaultSidecar } from "./lib/vault";
 import { runKineticCore } from "./lib/kinetic";
+import { startAutonomousCrawler } from "./lib/crawler";
 
 const rawPort = process.env["PORT"];
 
@@ -40,5 +41,8 @@ app.listen(port, (err) => {
   // Kinetic Resolver: synaptic entropy loop — Force-Collapse armed at threshold 0.85
   runKineticCore();
 
-  logger.info("SOLVEX-CORE-FINALIZED: ACTIVE | Sovereign Operating Mode | 54-Node Grid + Keyless Vault + Kinetic Resolver");
+  // Autonomous Crawler: HN + Reddit + StackOverflow — fires 5s after boot, then every 10min
+  startAutonomousCrawler();
+
+  logger.info("SOLVEX-CORE-FINALIZED: ACTIVE | Sovereign Operating Mode | 54-Node Grid + Keyless Vault + Kinetic Resolver + Autonomous Crawler");
 });
