@@ -452,10 +452,10 @@ function OutboundAuth({ chat }: { chat: (msg: string) => void }) {
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
-const TABS = ["AVATAR", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
+const TABS = ["COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
 
 export default function BrainConsole() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("AVATAR");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("COMM-LINK");
   const [pulse, setPulse] = useState(false);
   const [homeostasis] = useState(98.4);
 
@@ -513,6 +513,11 @@ export default function BrainConsole() {
           </div>
         </div>
 
+        {/* ── dAIsy Avatar — always visible ────────────────────────────────── */}
+        <div style={{ height: 240, flexShrink: 0, marginBottom: 16, border: "1px solid rgba(56,189,248,0.2)", overflow: "hidden", position: "relative" }}>
+          <DaisyAvatar />
+        </div>
+
         {/* Tab Bar */}
         <div style={{ display: "flex", gap: 0, marginBottom: 16, borderBottom: "1px solid #1A2035", flexShrink: 0 }}>
           {TABS.map(t => (
@@ -532,11 +537,6 @@ export default function BrainConsole() {
 
         {/* Tab Content */}
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          {tab === "AVATAR" && (
-            <div style={{ flex: 1, border: "1px solid rgba(56,189,248,0.2)", overflow: "hidden", position: "relative" }}>
-              <DaisyAvatar />
-            </div>
-          )}
           {tab === "COMM-LINK" && <CommLink />}
           {tab === "SANDBOX UI" && <SandboxUI />}
           {tab === "ROI ANALYTICS" && <RoiAnalytics />}
