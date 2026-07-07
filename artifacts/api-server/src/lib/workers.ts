@@ -196,3 +196,41 @@ export const getWorkerStatus = () =>
 export const getPhysicalNodeCount = (): number => pool.length;
 export const getLastConsensus = (): ConsensusRecord | null => lastConsensus;
 export const isSystemIsolated = (): boolean => systemIsolated;
+
+// Tether.sync — trigger an out-of-band consensus probe with a custom seed
+// Used by the Kinetic Resolver to broadcast Force-Collapse resolution pulses
+export const triggerConsensusProbe = async (seed: string): Promise<void> => {
+  if (pool.length === 0) return;
+  const round = ++consensusRound;
+  const challenge = crypto.createHash("sha256").update(seed).digest("hex");
+  const lamport = tickLamport();
+
+  pendingVotes.set(round, []);
+  const active = pool.filter(n => n.status === "ACTIVE");
+  for (const node of active) {
+    node.worker.postMessage({ type: "CONSENSUS_PROBE", challenge, round, lamport });
+  }
+
+  await new Promise(resolve => setTimeout(resolve, CONSENSUS_TIMEOUT_MS));
+
+  const votes = pendingVotes.get(round) ?? [];
+  pendingVotes.delete(round);
+  const expectedHash = crypto.createHash("sha256").update(challenge).digest("hex");
+  const correct = votes.filter(v => v.vote === expectedHash);
+
+  lastConsensus = {
+    round,
+    challenge,
+    quorumMet: correct.length >= CONSENSUS_QUORUM,
+    respondents: votes.length,
+    byzantineFaults: votes.filter(v => v.vote !== expectedHash).length,
+    committedHash: correct.length >= CONSENSUS_QUORUM ? expectedHash : "UNCOMMITTED",
+    lamportTick: Math.max(...votes.map(v => v.lamport), 0),
+    timestamp: Date.now(),
+  };
+
+  logger.info(
+    { round, respondents: votes.length, quorum: correct.length >= CONSENSUS_QUORUM, seed },
+    "TETHER_SYNC: Force-Collapse pulse broadcast complete",
+  );
+};

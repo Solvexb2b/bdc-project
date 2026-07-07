@@ -7,6 +7,7 @@ import { getPublicKey } from "../lib/signing";
 import { getAggregatedOps, getWorkerStatus, getPhysicalNodeCount, getLastConsensus, isSystemIsolated } from "../lib/workers";
 import { executeSecure, getSidecarStatus } from "../lib/vault";
 import { getAccretionStatus } from "../lib/accretion";
+import { getKineticState } from "../lib/kinetic";
 
 const router = Router();
 
@@ -72,6 +73,9 @@ router.get("/telemetry", async (req, res) => {
 
     // Pillar 3: Accretion model
     accretion,
+
+    // Kinetic Resolver state
+    kinetic: getKineticState(),
 
     // Cryptographic proof
     signature: secured.signature,
