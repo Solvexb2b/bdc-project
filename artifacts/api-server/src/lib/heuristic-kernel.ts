@@ -499,7 +499,7 @@ export interface ResolutionVector {
 
 // ── Synthesis Engine ─────────────────────────────────────────────────────────────
 export function resolveHeuristic(state: ParadoxState): ResolutionVector {
-  const { category, entropy, ageMs, accretionGapUSD, title } = state;
+  const { category, entropy, ageMs, title } = state;
   const executionPath: string[] = ["SYNTHESIS_ENGINE_v2.0"];
 
   // Stage 1: KEYING — select historical resolution keys
