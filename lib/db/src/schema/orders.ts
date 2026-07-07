@@ -1,10 +1,10 @@
-import { pgTable, text, integer, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const ordersTable = pgTable("orders", {
   id: text("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   productId: text("product_id").notNull(),
   status: text("status").notNull().default("pending"),
   paymentMethod: text("payment_method").notNull(),

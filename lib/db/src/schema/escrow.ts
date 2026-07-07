@@ -1,11 +1,11 @@
-import { pgTable, serial, text, integer, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const escrowTable = pgTable("escrow", {
   id: serial("id").primaryKey(),
   problemId: integer("problem_id").notNull(),
-  clientId: integer("client_id").notNull(),
+  clientId: varchar("client_id").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
   status: text("status").notNull().default("pending"),

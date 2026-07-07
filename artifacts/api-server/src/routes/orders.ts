@@ -17,7 +17,8 @@ const router = Router();
 router.post("/orders", async (req, res) => {
   try {
     const { productId, paymentMethod } = req.body;
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     if (!productId || !paymentMethod) {
       res.status(400).json({ error: "productId and paymentMethod required" });
       return;
@@ -46,7 +47,8 @@ router.post("/orders", async (req, res) => {
 
 router.get("/orders/mine", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.json([]); return; }
     const orders = await db.select().from(ordersTable).where(eq(ordersTable.userId, userId)).orderBy(desc(ordersTable.createdAt));
     res.json(orders);
   } catch (err) {

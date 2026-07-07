@@ -7,7 +7,8 @@ const router = Router();
 
 router.post("/escrow", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const { problemId, amount } = req.body;
     if (!problemId || !amount) { res.status(400).json({ error: "problemId and amount required" }); return; }
     const [escrow] = await db.insert(escrowTable).values({ problemId, clientId: userId, amount: String(amount), currency: "USD", status: "pending" }).returning();

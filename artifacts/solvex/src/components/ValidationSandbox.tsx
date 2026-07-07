@@ -146,10 +146,10 @@ export function ValidationSandbox({ productId, productName, category, zkHash }: 
     timerRef.current = setInterval(() => setElapsed(Date.now() - startRef.current), 50);
     const updated = [...fresh];
     for (let i = 0; i < updated.length; i++) {
-      updated[i] = { ...updated[i], status: "running" };
+      updated[i] = { ...updated[i], status: "running" as any };
       setSteps([...updated]);
       await delay(updated[i].ms);
-      updated[i] = { ...updated[i], status: "pass" };
+      updated[i] = { ...updated[i], status: "pass" as any };
       setSteps([...updated]);
       await delay(80);
     }

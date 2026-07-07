@@ -116,6 +116,7 @@ export default function Home() {
       const t = setTimeout(() => setCount(c => c + 1), 20);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [count]);
 
   return (

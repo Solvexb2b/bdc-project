@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useGetMe, useLogout } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { PARADOXES } from "../data/brainData";
 
 // Elder Futhark runes for Chamber I (paradoxes 1–13)
@@ -142,8 +142,7 @@ function GlassBoxLight() {
 }
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
-  const { data: user, isLoading } = useGetMe();
-  const logoutParams = useLogout();
+  const { user, isLoading, login, logout } = useAuth();
   const [location] = useLocation();
   const [tickerPos, setTickerPos] = useState(0);
   const tickerText = [...TICKER, ...TICKER].join("   ·   ");
@@ -249,7 +248,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
               );
             })}
 
-            {user?.role === "admin" && (
+            {(user as any)?.role === "admin" && (
               <>
                 <div style={{ padding: "16px 20px 8px", fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.2em", color: "#2A3050" }}>
                   ARCHITECT ACCESS
@@ -283,11 +282,10 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
             {user ? (
               <div>
                 <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "#5B6480", marginBottom: 8, letterSpacing: "0.1em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {user.email}
+                  {user.firstName ?? user.email ?? "AUTHENTICATED"}
                 </div>
                 <button
-                  onClick={() => logoutParams.mutate()}
-                  disabled={logoutParams.isPending}
+                  onClick={logout}
                   style={{
                     width: "100%", padding: "7px", background: "transparent",
                     border: "1px solid #1A2035", color: "#5B6480",
@@ -298,16 +296,16 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
                 </button>
               </div>
             ) : (
-              <Link href="/login">
-                <div style={{
-                  padding: "8px 12px", background: "linear-gradient(135deg, #D4AF37, #B8860B)",
-                  color: "#05080F", fontFamily: "'IBM Plex Mono', monospace",
+              <button
+                onClick={login}
+                style={{
+                  width: "100%", padding: "8px 12px", background: "linear-gradient(135deg, #D4AF37, #B8860B)",
+                  color: "#05080F", fontFamily: "'IBM Plex Mono', monospace", border: "none",
                   fontSize: 9, fontWeight: 800, letterSpacing: "0.15em",
                   textAlign: "center", cursor: "pointer",
                 }}>
-                  AUTHENTICATE →
-                </div>
-              </Link>
+                AUTHENTICATE →
+              </button>
             )}
             <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
               {["OSFI", "FINTRAC", "SOC2", "PIPEDA"].map(b => (

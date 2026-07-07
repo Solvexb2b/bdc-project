@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -12,7 +12,7 @@ export const vaultConfigTable = pgTable("vault_config", {
 export const vaultEntriesTable = pgTable("vault_entries", {
   id: text("id").primaryKey(),
   orderId: text("order_id").notNull(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   amount: numeric("amount", { precision: 18, scale: 8 }).notNull(),
   paymentMethod: text("payment_method").notNull(),
   status: text("status").notNull().default("pending"),

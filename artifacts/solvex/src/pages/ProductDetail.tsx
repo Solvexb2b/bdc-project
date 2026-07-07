@@ -56,7 +56,7 @@ export default function ProductDetail() {
 
   async function handleOrder() {
     setOrdering(true);
-    try { await createOrder.mutateAsync({ currency, productId: product!.id }); setOrdered(true); }
+    try { await (createOrder as any).mutateAsync({ paymentMethod: currency, productId: product!.id }); setOrdered(true); }
     catch { /* silently ignore */ }
     setOrdering(false);
   }
@@ -136,7 +136,7 @@ export default function ProductDetail() {
                 productId={product.id}
                 productName={product.name}
                 category={product.category ?? "fundamental"}
-                zkHash={product.zkProofHash ?? undefined}
+                zkHash={(product as any).zkProofHash ?? undefined}
               />
             </div>
 
@@ -156,7 +156,7 @@ export default function ProductDetail() {
                   <div style={{ ...MONO, fontSize: 9, color: "#5B6480" }}>Acquire clearance to decrypt</div>
                 </div>
                 <div style={{ padding: 20, ...MONO, fontSize: 11, color: "#1A2035", lineHeight: 1.8, filter: "blur(3px)" }}>
-                  {product.zkProofHash ?? "0x7f82e1b4c9a0d8e23b11488c99a3411b_ENCRYPTED_SOLUTION_PAYLOAD"}
+                  {(product as any).zkProofHash ?? "0x7f82e1b4c9a0d8e23b11488c99a3411b_ENCRYPTED_SOLUTION_PAYLOAD"}
                 </div>
               </div>
             </div>

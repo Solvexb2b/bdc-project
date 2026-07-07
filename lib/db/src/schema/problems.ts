@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -13,7 +13,7 @@ export const problemsTable = pgTable("problems", {
   paymentOffer: numeric("payment_offer", { precision: 12, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
   deadline: text("deadline"),
-  clientId: integer("client_id"),
+  clientId: varchar("client_id"),
   tags: text("tags"),
   viewCount: integer("view_count").notNull().default(0),
   isVerified: boolean("is_verified").notNull().default(false),

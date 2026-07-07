@@ -7,7 +7,8 @@ const router = Router();
 
 router.get("/library", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.json([]); return; }
     const purchases = await db.select().from(userPurchasesTable).where(eq(userPurchasesTable.userId, userId));
     const result = await Promise.all(purchases.map(async (p) => {
       const [product] = await db.select().from(paradoxProductsTable).where(eq(paradoxProductsTable.id, p.productId)).limit(1);
@@ -22,7 +23,8 @@ router.get("/library", async (req, res) => {
 
 router.get("/library/:productId/check", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.json({ purchased: false }); return; }
     const purchase = await db.select().from(userPurchasesTable)
       .where(and(eq(userPurchasesTable.userId, userId), eq(userPurchasesTable.productId, req.params.productId)))
       .limit(1);

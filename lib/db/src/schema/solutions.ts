@@ -1,11 +1,11 @@
-import { pgTable, serial, text, integer, numeric, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const solutionsTable = pgTable("solutions", {
   id: serial("id").primaryKey(),
   problemId: integer("problem_id").notNull(),
-  solverId: integer("solver_id").notNull(),
+  solverId: varchar("solver_id").notNull(),
   content: text("content").notNull(),
   status: text("status").notNull().default("pending"),
   verificationScore: numeric("verification_score", { precision: 5, scale: 2 }),

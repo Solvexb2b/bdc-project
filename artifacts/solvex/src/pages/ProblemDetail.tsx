@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 export default function ProblemDetail() {
   const params = useParams();
   const id = Number(params.id);
-  const { data: problem, isLoading } = useGetProblem(id.toString(), { query: { enabled: !!id } });
+  const { data: problem, isLoading } = useGetProblem(id, { query: { enabled: !!id, queryKey: ["problem", id] } });
 
   if (isLoading) return <DashboardLayout><div className="p-8 text-muted-foreground font-mono">Retrieving problem intel...</div></DashboardLayout>;
   if (!problem) return <DashboardLayout><div className="p-8 text-destructive font-mono">Intel not found.</div></DashboardLayout>;
+  const p = problem as any;
 
   return (
     <DashboardLayout>
@@ -18,18 +19,18 @@ export default function ProblemDetail() {
         <div className="flex justify-between items-start border-b border-border pb-6">
           <div>
             <div className="flex gap-2 mb-4">
-              <Badge variant="outline" className="text-primary border-primary font-mono uppercase">{problem.category}</Badge>
-              <Badge variant="secondary" className="font-mono uppercase bg-accent text-accent-foreground">{problem.status}</Badge>
+              <Badge variant="outline" className="text-primary border-primary font-mono uppercase">{p.category}</Badge>
+              <Badge variant="secondary" className="font-mono uppercase bg-accent text-accent-foreground">{p.status}</Badge>
             </div>
-            <h1 className="text-4xl font-mono font-bold mb-2">{problem.title}</h1>
+            <h1 className="text-4xl font-mono font-bold mb-2">{p.title}</h1>
             <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-4">
-              <span>Bounty ID: {problem.id}</span>
-              <span>Deadline: {problem.deadline ? new Date(problem.deadline).toLocaleDateString() : 'Open'}</span>
+              <span>Bounty ID: {p.id}</span>
+              <span>Deadline: {p.deadline ? new Date(p.deadline).toLocaleDateString() : 'Open'}</span>
             </div>
           </div>
           <div className="text-right bg-card border border-border p-4 rounded">
             <div className="text-sm font-mono text-muted-foreground uppercase tracking-widest mb-1">Bounty Offer</div>
-            <div className="text-3xl font-mono font-bold text-green-500">{problem.paymentOffer} {problem.currency || 'USD'}</div>
+            <div className="text-3xl font-mono font-bold text-green-500">{p.paymentOffer} {p.currency || 'USD'}</div>
           </div>
         </div>
 
@@ -38,7 +39,7 @@ export default function ProblemDetail() {
             <section className="space-y-4">
               <h2 className="text-xl font-mono text-primary uppercase border-b border-border pb-2">Problem Statement</h2>
               <div className="text-lg leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                {problem.description}
+                {p.description}
               </div>
             </section>
 
@@ -62,7 +63,7 @@ export default function ProblemDetail() {
                 </div>
                 <div className="flex items-center justify-between font-mono text-sm">
                   <span>Amount</span>
-                  <span>{problem.paymentOffer} {problem.currency || 'USD'}</span>
+                  <span>{p.paymentOffer} {p.currency || 'USD'}</span>
                 </div>
               </CardContent>
             </Card>

@@ -1,10 +1,10 @@
-import { pgTable, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const userPurchasesTable = pgTable("user_purchases", {
   id: text("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   productId: text("product_id").notNull(),
   orderId: text("order_id").notNull(),
   unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
@@ -18,7 +18,7 @@ export type UserPurchase = typeof userPurchasesTable.$inferSelect;
 export const auditLogTable = pgTable("audit_log", {
   id: text("id").primaryKey(),
   eventType: text("event_type").notNull(),
-  userId: integer("user_id"),
+  userId: varchar("user_id"),
   orderId: text("order_id"),
   details: text("details").notNull().default("{}"),
   status: text("status").notNull().default("success"),
@@ -30,6 +30,6 @@ export const paymentNotificationsTable = pgTable("payment_notifications", {
   orderId: text("order_id").notNull(),
   notificationType: text("notification_type").notNull(),
   message: text("message").notNull(),
-  isRead: integer("is_read").notNull().default(0),
+  isRead: text("is_read").notNull().default("0"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

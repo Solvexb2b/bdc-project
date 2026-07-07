@@ -7,7 +7,7 @@ const router = Router();
 
 router.get("/notifications", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
+    const userId = req.user?.id;
     if (!userId) { res.json([]); return; }
     const notifications = await db.select().from(notificationsTable).where(eq(notificationsTable.userId, userId)).orderBy(desc(notificationsTable.createdAt));
     res.json(notifications);
@@ -19,7 +19,7 @@ router.get("/notifications", async (req, res) => {
 
 router.get("/notifications/unread-count", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
+    const userId = req.user?.id;
     if (!userId) { res.json({ count: 0 }); return; }
     const all = await db.select().from(notificationsTable).where(and(eq(notificationsTable.userId, userId), eq(notificationsTable.isRead, false)));
     res.json({ count: all.length });
@@ -41,7 +41,7 @@ router.post("/notifications/:id/read", async (req, res) => {
 
 router.post("/notifications/mark-all-read", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId;
+    const userId = req.user?.id;
     if (!userId) { res.json({ success: true }); return; }
     await db.update(notificationsTable).set({ isRead: true }).where(eq(notificationsTable.userId, userId));
     res.json({ success: true, message: "All marked as read" });

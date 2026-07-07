@@ -7,12 +7,13 @@ const router = Router();
 
 router.post("/offers", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const { problemId, amount, message, expiresAt } = req.body;
     if (!problemId || !amount) { res.status(400).json({ error: "problemId and amount required" }); return; }
     const [problem] = await db.select().from(problemsTable).where(eq(problemsTable.id, problemId)).limit(1);
     if (!problem) { res.status(404).json({ error: "Problem not found" }); return; }
-    const toUserId = problem.clientId ?? 1;
+    const toUserId = problem.clientId ?? userId;
     const [offer] = await db.insert(offersTable).values({ problemId, fromUserId: userId, toUserId, amount: String(amount), message: message ?? null, expiresAt: expiresAt ? new Date(expiresAt) : null }).returning();
     if (problem.clientId) {
       await db.insert(notificationsTable).values({ userId: problem.clientId, type: "new_offer", title: "New Offer Received", message: `A solver made an offer of $${amount} for: ${problem.title}`, problemId });
@@ -26,7 +27,8 @@ router.post("/offers", async (req, res) => {
 
 router.get("/offers/mine", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id ?? null;
+    if (!userId) { res.json([]); return; }
     const { type = "received" } = req.query as { type?: string };
     let offers;
     if (type === "sent") {
@@ -54,7 +56,8 @@ router.get("/offers/problem/:problemId", async (req, res) => {
 
 router.post("/offers/:id/counter", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const id = parseInt(req.params.id);
     const { amount, message } = req.body;
     const [original] = await db.select().from(offersTable).where(eq(offersTable.id, id)).limit(1);

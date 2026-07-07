@@ -1,10 +1,10 @@
-import { pgTable, serial, text, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, integer, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const notificationsTable = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   type: text("type").notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
@@ -19,7 +19,7 @@ export type Notification = typeof notificationsTable.$inferSelect;
 
 export const earningsTable = pgTable("earnings", {
   id: serial("id").primaryKey(),
-  solverId: integer("solver_id").notNull(),
+  solverId: varchar("solver_id").notNull(),
   problemId: integer("problem_id").notNull(),
   solutionId: integer("solution_id").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
@@ -36,8 +36,8 @@ export type Earning = typeof earningsTable.$inferSelect;
 export const offersTable = pgTable("offers", {
   id: serial("id").primaryKey(),
   problemId: integer("problem_id").notNull(),
-  fromUserId: integer("from_user_id").notNull(),
-  toUserId: integer("to_user_id").notNull(),
+  fromUserId: varchar("from_user_id").notNull(),
+  toUserId: varchar("to_user_id").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("USD"),
   message: text("message"),

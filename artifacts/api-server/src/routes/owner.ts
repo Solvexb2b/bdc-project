@@ -57,7 +57,7 @@ router.get("/owner/system-stats", async (req, res) => {
 router.get("/owner/payment-notifications", async (req, res) => {
   try {
     const notifications = await db.select().from(paymentNotificationsTable).orderBy(desc(paymentNotificationsTable.createdAt));
-    res.json(notifications.map((n) => ({ ...n, isRead: n.isRead === 1 })));
+    res.json(notifications.map((n) => ({ ...n, isRead: n.isRead === "1" })));
   } catch (err) {
     req.log.error({ err }, "payment notifications error");
     res.status(500).json({ error: "Internal server error" });

@@ -8,7 +8,8 @@ const router = Router();
 
 router.post("/solutions", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? 1;
+    const userId = req.user?.id;
+    if (!userId) { res.status(401).json({ error: "Authentication required" }); return; }
     const { problemId, content } = req.body;
     if (!problemId || !content) { res.status(400).json({ error: "problemId and content required" }); return; }
     const [problem] = await db.select().from(problemsTable).where(eq(problemsTable.id, problemId)).limit(1);

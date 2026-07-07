@@ -37,7 +37,7 @@ router.get("/problems/stats", async (req, res) => {
 
 router.get("/problems/mine", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? null;
+    const userId = req.user?.id ?? null;
     if (!userId) { res.json([]); return; }
     const problems = await db.select().from(problemsTable).where(eq(problemsTable.clientId, userId)).orderBy(desc(problemsTable.createdAt));
     res.json(problems);
@@ -64,7 +64,7 @@ router.get("/problems/:id", async (req, res) => {
 
 router.post("/problems", async (req, res) => {
   try {
-    const userId = (req.session as any)?.userId ?? null;
+    const userId = req.user?.id ?? null;
     const { title, description, category, paymentOffer, deadline, tags } = req.body;
     if (!title || !description || !category || !paymentOffer) {
       res.status(400).json({ error: "title, description, category, paymentOffer required" });
