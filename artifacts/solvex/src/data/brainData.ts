@@ -83,6 +83,38 @@ export const PARADOXES: Paradox[] = [
   { id: 59, chamber: 5, name: "Axiom Resolution vs Paradox Synthesis", description: "The terminal paradox: resolves all prior 58 paradoxes into a single unified sovereign execution axiom — the dAIsy haMINJA U.A.R.E.F.A.K.E. convergence proof." },
 ];
 
+// ── SOVEREIGN SOLUTION LAYERS ────────────────────────────────────────────────
+export interface SovereignSolution {
+  id: string;
+  name: string;
+  description: string;
+  layer: number;
+  layerName: string;
+}
+
+export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
+  // ─── LAYER 1: CHRONO-CONSISTENCY & TIME SYNCHRONIZATION (S-001–S-015) ────
+  { id: "S-001", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Deterministic Clock Synchronizer",          description: "Enforces absolute chronological ordering of sovereign transactions using local hardware clock drift calibration." },
+  { id: "S-002", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Lamport Vector Sequence Alignment",          description: "Combines physical clock offsets with logical Lamport timestamps to maintain transactional causality under partition." },
+  { id: "S-003", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Monotonic Nanosecond Clock Pinning",          description: "Prevents time-rollback attacks by locking the system clock to a strict monotonic CPU register." },
+  { id: "S-004", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Relativistic Network Delay Compensation",    description: "Measures and negates physical signal latency across long-distance ad-hoc routing lanes." },
+  { id: "S-005", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Epoch Drift Calibration Matrix",              description: "Dynamically aligns epoch boundaries across high-latency mesh nodes using peer consensus." },
+  { id: "S-006", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Radioactive Entropy Time Seed",               description: "Utilizes ambient thermal sensor noise to synthesize unpredictable, chronologically locked seed nonces." },
+  { id: "S-007", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Anti-Clock-Skew Token Validation",            description: "Discards transactions that deviate beyond the local cluster's consensus skew threshold." },
+  { id: "S-008", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Jitter-Filtered Logical Clock Guard",         description: "Smoothes out hardware clock jitter using Kalman filter estimation of CPU cycle consistency." },
+  { id: "S-009", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Zero-Trust Time Attestation",                 description: "Verifies peer-asserted timestamps against cryptographically signed peer challenge logs." },
+  { id: "S-010", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Bilevel Chrono-Compaction Loop",              description: "Compresses historic temporal ledgers by grouping transactions into immutable consensus intervals." },
+  { id: "S-011", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Super-Sovereign Time-Anchor Protocol",        description: "Periodically aligns local logical time with hard-coded stellar/physical reference constants." },
+  { id: "S-012", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Sub-Nanosecond Thread Interleaving",          description: "Schedules high-frequency tasks down to the clock-cycle level to prevent concurrency lockouts." },
+  { id: "S-013", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Local Oscillator Temperature Correction",     description: "Adjusts clock drift calculations dynamically based on CPU thermal sensor feedback." },
+  { id: "S-014", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Causal History Pruning Engine",               description: "Safeguards clock integrity by deleting obsolete execution paths once temporal consistency is globally verified." },
+  { id: "S-015", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Split-Brain Temporal Alignment Guard",        description: "Re-synchronizes isolated network segments smoothly upon reconnecting, preventing sequence duplication." },
+];
+
+export const SOLUTION_LAYERS = [
+  { num: 1, name: "Chrono-Consistency & Time Synchronization", solutions: 15, color: "#60A5FA", symbol: "⧖", desc: "Deterministic clock ordering, Lamport causality, anti-skew and temporal compaction" },
+];
+
 export const BRAIN_PRODUCTS: BrainProduct[] = [
   { id: "SOLVEX-BRAIN-01", name: "Chassis Controller", category: "fundamental", description: "Hardware-level orchestration layer managing bare-metal resource allocation across sovereign execution nodes." },
   { id: "SOLVEX-BRAIN-02", name: "Memory Controller", category: "fundamental", description: "Deterministic memory space management with compile-time bounds checking and zero-copy buffer allocation." },

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "../components/DashboardLayout";
 import { DaisyAvatar } from "../components/DaisyAvatar";
-import { PARADOXES } from "../data/brainData";
+import { PARADOXES, SOVEREIGN_SOLUTIONS, SOLUTION_LAYERS } from "../data/brainData";
 
 const MONO = "'IBM Plex Mono', monospace";
 const SERIF = "'Playfair Display', serif";
@@ -451,11 +451,148 @@ function OutboundAuth({ chat }: { chat: (msg: string) => void }) {
   );
 }
 
+// ── SOLUTIONS LAYER ───────────────────────────────────────────────────────────
+function SolutionsLayer() {
+  const [activeLayer, setActiveLayer] = useState(1);
+  const [activeSol, setActiveSol] = useState<string | null>(null);
+
+  const layerSolutions = SOVEREIGN_SOLUTIONS.filter(s => s.layer === activeLayer);
+  const detail = SOVEREIGN_SOLUTIONS.find(s => s.id === activeSol);
+  const layerMeta = SOLUTION_LAYERS.find(l => l.num === activeLayer);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 0, overflow: "hidden" }}>
+
+      {/* Layer selector strip */}
+      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #1A2035", flexShrink: 0 }}>
+        {SOLUTION_LAYERS.map(l => (
+          <button key={l.num} onClick={() => { setActiveLayer(l.num); setActiveSol(null); }}
+            style={{
+              padding: "10px 20px", background: "transparent",
+              borderTop: "none", borderLeft: "none", borderRight: "none",
+              borderBottom: activeLayer === l.num ? `2px solid ${l.color}` : "2px solid transparent",
+              color: activeLayer === l.num ? l.color : MID,
+              fontFamily: MONO, fontSize: 9, fontWeight: activeLayer === l.num ? 700 : 400,
+              letterSpacing: "0.15em", cursor: "pointer", whiteSpace: "nowrap",
+            }}>
+            LAYER {l.num} · {l.name.toUpperCase()}
+          </button>
+        ))}
+        <div style={{ flex: 1 }} />
+        <div style={{ padding: "10px 16px", fontFamily: MONO, fontSize: 8, color: DIM, letterSpacing: "0.12em", alignSelf: "center" }}>
+          {SOVEREIGN_SOLUTIONS.length} SOLUTIONS INDEXED
+        </div>
+      </div>
+
+      {/* Layer header */}
+      {layerMeta && (
+        <div style={{ padding: "14px 20px", background: NAVY2, borderBottom: "1px solid #1A2035", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ fontFamily: MONO, fontSize: 22, color: layerMeta.color }}>{layerMeta.symbol}</div>
+            <div>
+              <div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 700, color: "#D8DAE0", marginBottom: 3 }}>
+                LAYER {layerMeta.num}: {layerMeta.name.toUpperCase()}
+              </div>
+              <div style={{ fontFamily: MONO, fontSize: 8, color: MID }}>{layerMeta.desc}</div>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontFamily: MONO, fontSize: 18, fontWeight: 800, color: layerMeta.color }}>{layerMeta.solutions}</div>
+            <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.15em", color: DIM }}>SOLUTIONS</div>
+          </div>
+        </div>
+      )}
+
+      {/* Main panel: grid + detail */}
+      <div style={{ flex: 1, overflow: "hidden", display: "flex", gap: 0 }}>
+
+        {/* Solution grid */}
+        <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, alignContent: "start" }}>
+          {layerSolutions.map((s, idx) => {
+            const isActive = activeSol === s.id;
+            return (
+              <button key={s.id} onClick={() => setActiveSol(isActive ? null : s.id)}
+                style={{
+                  background: isActive ? `rgba(96,165,250,0.1)` : NAVY2,
+                  border: `1px solid ${isActive ? "rgba(96,165,250,0.45)" : "#1A2035"}`,
+                  padding: "12px 14px", textAlign: "left", cursor: "pointer",
+                  transition: "all 0.15s",
+                }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.15em", color: isActive ? BLUE : DIM, fontWeight: 700 }}>{s.id}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: isActive ? BLUE : "#1A2035", border: `1px solid ${isActive ? BLUE : "#1A2035"}`, padding: "1px 5px" }}>
+                    {String(idx + 1).padStart(2, "0")}
+                  </div>
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: isActive ? "#D8DAE8" : "#8B95B0", lineHeight: 1.4, marginBottom: 4 }}>
+                  {s.name}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: isActive ? "#5B6480" : "#2A3050", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {s.description}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Detail pane */}
+        <div style={{ width: 300, borderLeft: "1px solid #1A2035", overflowY: "auto", background: "#04060F", flexShrink: 0 }}>
+          {detail ? (
+            <div style={{ padding: 20 }}>
+              <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.2em", color: DIM, marginBottom: 6 }}>SOLUTION DETAIL</div>
+              <div style={{ fontFamily: MONO, fontSize: 13, fontWeight: 800, color: BLUE, marginBottom: 4 }}>{detail.id}</div>
+              <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: "#D8DAE0", lineHeight: 1.45, marginBottom: 16 }}>{detail.name}</div>
+              <div style={{ width: 32, height: 1, background: "rgba(96,165,250,0.3)", marginBottom: 16 }} />
+              <div style={{ fontFamily: MONO, fontSize: 8, color: MID, lineHeight: 1.8, marginBottom: 20 }}>{detail.description}</div>
+
+              {/* Meta tags */}
+              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 20 }}>
+                {[
+                  "LAYER " + detail.layer,
+                  "SOVEREIGN CORE",
+                  "U.A.R.E.F.A.K.E.",
+                  detail.id.startsWith("S-0") && parseInt(detail.id.slice(2)) <= 5 ? "CLOCK DOMAIN" : "TIME-SYNC",
+                ].filter(Boolean).map(tag => (
+                  <div key={tag as string} style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.12em", color: BLUE, border: "1px solid rgba(96,165,250,0.2)", padding: "2px 7px", background: "rgba(96,165,250,0.06)" }}>
+                    {tag as string}
+                  </div>
+                ))}
+              </div>
+
+              {/* Compliance */}
+              <div style={{ padding: "12px 14px", border: "1px solid rgba(52,211,153,0.15)", background: "rgba(52,211,153,0.04)", marginBottom: 12 }}>
+                <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.15em", color: GREEN, marginBottom: 6 }}>COMPLIANCE ATTESTATION</div>
+                {["NIST SP 800-53", "SOC 2 TYPE II", "ISO 27001", "LAMPORT-ORDERED"].map(c => (
+                  <div key={c} style={{ fontFamily: MONO, fontSize: 8, color: "#4B5568", marginBottom: 3 }}>
+                    <span style={{ color: GREEN, marginRight: 6 }}>✓</span>{c}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ fontFamily: MONO, fontSize: 7, color: DIM, lineHeight: 1.7 }}>
+                LAYER {detail.layer} — {detail.layerName.toUpperCase()}<br />
+                INDEXED TO SOVEREIGN EXECUTION MATRIX
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12 }}>
+              <div style={{ fontFamily: MONO, fontSize: 22, color: "#1A2035" }}>⧖</div>
+              <div style={{ fontFamily: MONO, fontSize: 8, color: DIM, textAlign: "center", letterSpacing: "0.1em", lineHeight: 1.8 }}>
+                SELECT A SOLUTION<br />TO VIEW DETAILS
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN ──────────────────────────────────────────────────────────────────────
-const TABS = ["COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
+const TABS = ["SOLUTIONS", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
 
 export default function BrainConsole() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>("COMM-LINK");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("SOLUTIONS");
   const [pulse, setPulse] = useState(false);
   const [homeostasis] = useState(98.4);
 
@@ -537,6 +674,7 @@ export default function BrainConsole() {
 
         {/* Tab Content */}
         <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          {tab === "SOLUTIONS" && <SolutionsLayer />}
           {tab === "COMM-LINK" && <CommLink />}
           {tab === "SANDBOX UI" && <SandboxUI />}
           {tab === "ROI ANALYTICS" && <RoiAnalytics />}
