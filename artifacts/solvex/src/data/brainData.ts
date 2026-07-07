@@ -109,10 +109,28 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-013", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Local Oscillator Temperature Correction",     description: "Adjusts clock drift calculations dynamically based on CPU thermal sensor feedback." },
   { id: "S-014", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Causal History Pruning Engine",               description: "Safeguards clock integrity by deleting obsolete execution paths once temporal consistency is globally verified." },
   { id: "S-015", layer: 1, layerName: "Chrono-Consistency & Time Synchronization", name: "Split-Brain Temporal Alignment Guard",        description: "Re-synchronizes isolated network segments smoothly upon reconnecting, preventing sequence duplication." },
+
+  // ─── LAYER 2: ENCLAVE CRYPTOGRAPHY & SANDBOXED SECURITY (S-016–S-030) ────
+  { id: "S-016", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Solvex Black Box Vault",                      description: "Deploys non-custodial, offline-first security enclaves using military-grade cryptographic hashing and local-only ephemeral memory." },
+  { id: "S-017", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Zero-Sandbox Code Execution",                 description: "Bypasses secondary OS system calls for latency-free hardware orchestration while maintaining instruction safety checks." },
+  { id: "S-018", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Ephemeral Key Zeroization Protocol",          description: "Overwrites temporary 256-bit memory buffers with zero arrays immediately after use." },
+  { id: "S-019", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Lightweight eBPF Bytecode Verifier",          description: "Statistically checks custom compiled runtime scripts for stack overflows or out-of-bounds access." },
+  { id: "S-020", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Isomorphic Memory Encryption",                description: "Encrypts volatile RAM partitions continuously using a dynamic, hardware-isolated AES-XTS key." },
+  { id: "S-021", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Deterministic VM Memory Sandboxing",          description: "Runs untrusted node queries within isolated, heap-limited virtual machine spaces." },
+  { id: "S-022", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Interactive Cryptographic Challenge Handshake", description: "Mandates rapid initial challenge-response cycles before granting node privileges." },
+  { id: "S-023", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Secure Signature Verifier (SHA-256)",         description: "Hardware-accelerated validation of incoming package hashes against authorized signing authority registries." },
+  { id: "S-024", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Multi-Tenant Memory Separation Fence",        description: "Employs strict memory-barriers to prevent side-channel leaks between concurrent sandbox compilation threads." },
+  { id: "S-025", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Dynamic Compile-Time Contract Enforcer",      description: "Evaluates input parameters against system security invariants before executing bytecode." },
+  { id: "S-026", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Non-Interactive Zero-Knowledge Proof (NIZKP) Guard", description: "Confirms state transitions without exposing the underlying node state memory variables." },
+  { id: "S-027", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Volatile Stack Overflow Shield",              description: "Places empty sentinel pages around the compilation thread stack to instantly trap out-of-bounds writes." },
+  { id: "S-028", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Dynamic System Call Sanitizer",               description: "Intercepts and filters system calls, immediately blocking unauthorized kernel access attempts." },
+  { id: "S-029", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Static AST Analysis Parser",                  description: "Decodes and inspects incoming user code trees, identifying and discarding structural vulnerabilities." },
+  { id: "S-030", layer: 2, layerName: "Enclave Cryptography & Sandboxed Security", name: "Hardware-Backed Nonce Generator",             description: "Leverages hardware-isolated keystore elements to generate globally unique, single-use security tokens." },
 ];
 
 export const SOLUTION_LAYERS = [
   { num: 1, name: "Chrono-Consistency & Time Synchronization", solutions: 15, color: "#60A5FA", symbol: "⧖", desc: "Deterministic clock ordering, Lamport causality, anti-skew and temporal compaction" },
+  { num: 2, name: "Enclave Cryptography & Sandboxed Security", solutions: 15, color: "#A78BFA", symbol: "⬡", desc: "Military-grade enclaves, zero-knowledge proofs, memory isolation and bytecode verification" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
