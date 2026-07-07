@@ -65,7 +65,7 @@ export default function Marketplace() {
             }}>
               {[
                 { val: String(products?.length ?? ""), lbl: "PRODUCTS" }, { val: "5", lbl: "CHAMBERS" },
-                { val: "59", lbl: "PARADOXES" }, { val: "$4.2B", lbl: "CLEARED DAILY" },
+                { val: "88", lbl: "PARADOXES" }, { val: "$4.2B", lbl: "CLEARED DAILY" },
                 { val: "99.999%", lbl: "SLA" }, { val: "OSFI ✓", lbl: "CERTIFIED" },
               ].map((s, i) => (
                 <div key={i} style={{ flex: 1, borderLeft: i > 0 ? "1px solid #1A2035" : "none", paddingLeft: i > 0 ? 20 : 0 }}>
