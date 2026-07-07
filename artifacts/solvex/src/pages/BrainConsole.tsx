@@ -589,12 +589,45 @@ function SolutionsLayer() {
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
+interface LiveTelemetry {
+  systemId: string;
+  mode: string;
+  opsPerSec: number;
+  heapUsedMB: string;
+  heapTotalMB: string;
+  eventLoopLagMs: string;
+  uptimeSec: number;
+  rssMB: string;
+  systemStatic: boolean;
+  lamportTick: number;
+  digest: string;
+  nonce: number;
+  timestamp: number;
+}
+
+function useLiveTelemetry() {
+  const [data, setData] = useState<LiveTelemetry | null>(null);
+  useEffect(() => {
+    const poll = () => {
+      fetch("/api/telemetry")
+        .then(r => r.json())
+        .then(setData)
+        .catch(() => null);
+    };
+    poll();
+    const id = setInterval(poll, 2000);
+    return () => clearInterval(id);
+  }, []);
+  return data;
+}
+
 const TABS = ["SOLUTIONS", "COMM-LINK", "SANDBOX UI", "ROI ANALYTICS", "OUTBOUND AUTH"] as const;
 
 export default function BrainConsole() {
   const [tab, setTab] = useState<(typeof TABS)[number]>("SOLUTIONS");
   const [pulse, setPulse] = useState(false);
   const [homeostasis] = useState(98.4);
+  const telemetry = useLiveTelemetry();
 
   useEffect(() => {
     const t = setInterval(() => setPulse(p => !p), 1400);
@@ -624,8 +657,8 @@ export default function BrainConsole() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: GREEN, boxShadow: pulse ? "0 0 10px 3px rgba(52,211,153,0.5)" : "0 0 3px 1px rgba(52,211,153,0.2)", transition: "box-shadow 0.7s ease" }} />
-                  <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, letterSpacing: "0.15em" }}>SOVEREIGN OPERATING MODE</span>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: telemetry?.systemStatic ? AMBER : GREEN, boxShadow: pulse ? `0 0 10px 3px ${telemetry?.systemStatic ? "rgba(245,158,11,0.5)" : "rgba(52,211,153,0.5)"}` : `0 0 3px 1px ${telemetry?.systemStatic ? "rgba(245,158,11,0.2)" : "rgba(52,211,153,0.2)"}`, transition: "box-shadow 0.7s ease" }} />
+                  <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: telemetry?.systemStatic ? AMBER : GREEN, letterSpacing: "0.15em" }}>{telemetry ? telemetry.mode : "INITIALIZING..."}</span>
                 </div>
                 <div style={{ fontFamily: MONO, fontSize: 7.5, color: MID }}>59 PARADOXES · 105 SOLUTIONS · 7 LAYERS</div>
                 <div style={{ fontFamily: MONO, fontSize: 7.5, color: MID }}>NIST SP 800-53 ✓ &nbsp; SOC 2 TYPE II ✓ &nbsp; ISO 27001 ✓</div>
@@ -633,20 +666,20 @@ export default function BrainConsole() {
             </div>
           </div>
 
-          {/* System status row */}
+          {/* System status row — LIVE telemetry from /api/telemetry */}
           <div style={{ position: "relative", zIndex: 1, marginTop: 14, paddingTop: 14, borderTop: "1px solid #1A2035", display: "flex", gap: 28, flexWrap: "wrap" }}>
             {[
-              { label: "SYSTEM STATUS", val: "ACTIVE" },
-              { label: "PIPELINE", val: "420.69K ops/sec" },
-              { label: "LATENCY", val: "0.14ms jitter" },
-              { label: "P99", val: "0.32ms" },
-              { label: "CLOCK STATUS", val: "LAMPORT ORDERED" },
-              { label: "EFTPS TRANSFER", val: "SECURED & REALTIME" },
-              { label: "ACTIVE NODES", val: "54 Recursive" },
+              { label: "SYSTEM STATUS",   val: telemetry ? (telemetry.systemStatic ? "SYSTEM-STATIC" : "ACTIVE") : "—" },
+              { label: "OPS / SEC",        val: telemetry ? `${telemetry.opsPerSec.toLocaleString()}` : "—" },
+              { label: "EVENT LOOP LAG",   val: telemetry ? `${telemetry.eventLoopLagMs}ms` : "—" },
+              { label: "HEAP USED",        val: telemetry ? `${telemetry.heapUsedMB} MB` : "—" },
+              { label: "LAMPORT TICK",     val: telemetry ? `#${telemetry.lamportTick}` : "—" },
+              { label: "EFTPS TRANSFER",   val: "SECURED & REALTIME" },
+              { label: "ACTIVE NODES",     val: "54 RECURSIVE" },
             ].map(s => (
               <div key={s.label}>
                 <div style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.15em", color: DIM, marginBottom: 2 }}>{s.label}</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: "#8B95B0" }}>{s.val}</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: s.label === "SYSTEM STATUS" && telemetry?.systemStatic ? AMBER : "#8B95B0" }}>{s.val}</div>
               </div>
             ))}
           </div>

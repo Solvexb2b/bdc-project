@@ -14,6 +14,7 @@ import earningsRouter from "./earnings";
 import offersRouter from "./offers";
 import ownerRouter from "./owner";
 import brainRouter from "./brain";
+import telemetryRouter from "./telemetry";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(earningsRouter);
 router.use(offersRouter);
 router.use(ownerRouter);
 router.use(brainRouter);
+router.use(telemetryRouter);
 
 export default router;
