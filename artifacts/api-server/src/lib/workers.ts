@@ -4,17 +4,45 @@
  * Each node is a recursive verifier. Results are committed only after quorum.
  *
  * Pillar 6: LAMPORT CAUSALITY — each worker maintains its own Lamport counter.
+ *
+ * TETHER SYNAPSE: Atomics-based SharedArrayBuffer for L1-L5 synchronization.
+ * Layout (Int32, 8 slots × 4 bytes):
+ *   [0] tether_state  (0=STABLE, 1=ENTROPIC, 2=FORCE_COLLAPSE, 3=OFFLINE)
+ *   [1] entropy_ppm   (entropy × 1_000_000, stored as int for atomic ops)
+ *   [2] consensus_round
+ *   [3] collapse_count
+ *   [4] active_nodes
+ *   [5] lamport_tick
+ *   [6] total_ops_k   (total ops ÷ 1000, atomic-safe)
+ *   [7] reserved
  */
-import { Worker, MessageChannel } from "worker_threads";
+import { Worker } from "worker_threads";
 import crypto from "crypto";
 import { logger } from "./logger";
 import { tickLamport } from "./lamport";
+
+// ── Shared memory tether (L1-L5 atomic synchronization) ──────────────────────
+const TETHER_BUFFER = new SharedArrayBuffer(8 * Int32Array.BYTES_PER_ELEMENT);
+export const tether = new Int32Array(TETHER_BUFFER);
+
+export const TETHER_SLOTS = {
+  STATE: 0, ENTROPY_PPM: 1, CONSENSUS_ROUND: 2, COLLAPSE_COUNT: 3,
+  ACTIVE_NODES: 4, LAMPORT: 5, TOTAL_OPS_K: 6, RESERVED: 7,
+} as const;
+
+// Write helpers — Atomics.store is sequentially consistent
+export const tetherWrite = (slot: number, value: number) =>
+  Atomics.store(tether, slot, value);
+export const tetherRead = (slot: number) =>
+  Atomics.load(tether, slot);
+export const tetherAdd = (slot: number, delta: number) =>
+  Atomics.add(tether, slot, delta);
 
 const NODE_COUNT = 54;
 const CONSENSUS_QUORUM = 28;
 const CONSENSUS_TIMEOUT_MS = 500;
 
-// Inline worker: real SHA-256 computation + consensus participation
+// Inline worker: SHA-256 computation + consensus + Atomics tether writes
 const WORKER_CODE = `
 const { parentPort, workerData } = require('worker_threads');
 const crypto = require('crypto');
@@ -22,6 +50,14 @@ const crypto = require('crypto');
 let ops = 0;
 let lamportTick = 0;
 let seed = 'solvex-node-' + workerData.nodeId;
+
+// L1-L5 Tether: Atomics-based shared memory (passed via workerData.tetherBuffer)
+const tether = workerData.tetherBuffer ? new Int32Array(workerData.tetherBuffer) : null;
+const SLOT_TOTAL_OPS_K = 6;
+const SLOT_ACTIVE_NODES = 4;
+
+// Signal this node as active
+if (tether) Atomics.add(tether, SLOT_ACTIVE_NODES, 1);
 
 // Light hashing loop — 100 hashes every 8ms (~12,500 ops/sec per node)
 const loop = () => {
@@ -33,9 +69,11 @@ const loop = () => {
 };
 loop();
 
-// Telemetry report every second
+// Telemetry + tether write every second
 setInterval(() => {
   lamportTick++;
+  // Write ops into shared tether memory (Atomics.add, no lock needed)
+  if (tether) Atomics.add(tether, SLOT_TOTAL_OPS_K, Math.floor(ops / 1000));
   parentPort.postMessage({ type: 'ops', count: ops, nodeId: workerData.nodeId, lamport: lamportTick });
   ops = 0;
 }, 1000);
@@ -89,7 +127,7 @@ export const initializeWorkerPool = (): void => {
   for (let i = 0; i < NODE_COUNT; i++) {
     const worker = new Worker(WORKER_CODE, {
       eval: true,
-      workerData: { nodeId: i },
+      workerData: { nodeId: i, tetherBuffer: TETHER_BUFFER },
     });
 
     const node: WorkerNode = { id: i, worker, ops: 0, lamport: 0, status: "ACTIVE" };

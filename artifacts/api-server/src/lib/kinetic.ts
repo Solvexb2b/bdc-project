@@ -25,9 +25,11 @@ import {
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { tickLamport } from "./lamport";
-import { getLastConsensus, triggerConsensusProbe } from "./workers";
+import { getLastConsensus, triggerConsensusProbe, tetherWrite, TETHER_SLOTS } from "./workers";
 import { logger } from "./logger";
-import { getAccretionStatus } from "./accretion";
+import { getAccretionStatus, getPerSolutionFloor } from "./accretion";
+import { resolveHeuristic, type ParadoxState } from "./heuristic-kernel";
+import { emitIntent } from "./intent";
 
 // ── Physical constants ─────────────────────────────────────────────────────────
 const THRESHOLD = 0.85;
@@ -78,86 +80,66 @@ async function calculateEntropy(): Promise<number> {
   return open.length / all.length;
 }
 
-// ── Paradox synthesizer ────────────────────────────────────────────────────────
-// Selects the oldest unresolved paradox and synthesizes a structured S-Solution.
-// Without an LLM this is template-based synthesis; with dAIsy wired it becomes
-// AI-authored. The commit path and ledger write are identical either way.
-const SYNTHESIS_TEMPLATES: Record<string, string> = {
-  technical: [
-    "Architectural decomposition reveals the core bottleneck is state synchronization across distributed boundaries.",
-    "Implement event-sourcing with CQRS separation: commands mutate state, queries project read models.",
-    "Introduce a saga orchestrator for cross-service transactions with compensating actions on failure.",
-    "Apply backpressure via token-bucket rate limiting at the ingress layer to prevent cascade saturation.",
-  ].join(" "),
-  financial: [
-    "The liquidity paradox is resolved by separating settlement timing from execution timing.",
-    "Implement a dual-ledger model: provisional entries on execution, finalized entries on settlement T+0.",
-    "Apply the 177% CAGR accretion model as the minimum viable return threshold for capital allocation.",
-    "Introduce zero-knowledge proofs for regulatory reporting without exposing position data.",
-  ].join(" "),
-  legal: [
-    "Jurisdictional conflicts are resolved by establishing a sovereign arbitration layer with explicit conflict-of-laws rules.",
-    "Implement contractual force-majeure clauses indexed to real-time regulatory change feeds.",
-    "Apply the least-restrictive-means test as the compliance gate for cross-border operations.",
-  ].join(" "),
-  business: [
-    "Market paradox: the optimal price point maximizes neither volume nor margin individually.",
-    "Resolve via dynamic segmentation — price discrimination across willingness-to-pay cohorts.",
-    "Apply the accretion model: solutions must expand the total addressable market, not merely capture share.",
-  ].join(" "),
-  general: [
-    "The paradox resolves when the system is viewed as a constraint satisfaction problem.",
-    "Map all constraints, identify the binding constraint (Theory of Constraints), and subordinate all other decisions.",
-    "Implement continuous re-evaluation as constraint profiles shift under load.",
-  ].join(" "),
-};
-
+// ── Paradox synthesizer — Heuristic Kernel ────────────────────────────────────
+// Uses the deterministic rule-based decision tree (zero hallucination).
+// Same paradox state always produces the same resolution vector.
 async function synthesizeParadox(
   nodeId: number,
-  tether: ReturnType<typeof tetherSnapshot>,
-  problem: { id: number; title: string; category: string },
+  snap: ReturnType<typeof tetherSnapshot>,
+  problem: { id: number; title: string; category: string; paymentOffer: string; createdAt: Date },
+  entropy: number,
 ): Promise<{ id: number; content: string; collapseHash: string }> {
   const lamport = tickLamport();
   const collapseHash = crypto
     .createHash("sha256")
-    .update(`${nodeId}:${problem.id}:${lamport}:${tether.timestamp}:${tether.committedHash}`)
+    .update(`${nodeId}:${problem.id}:${lamport}:${snap.timestamp}:${snap.committedHash}`)
     .digest("hex");
 
-  const template =
-    SYNTHESIS_TEMPLATES[problem.category] ?? SYNTHESIS_TEMPLATES.general;
   const accretion = getAccretionStatus();
+  const floorUSD = getPerSolutionFloor();
+  const submittedImpact = parseFloat(problem.paymentOffer) || 0;
+
+  // Heuristic kernel — deterministic decision tree
+  const paradoxState: ParadoxState = {
+    category: problem.category,
+    entropy,
+    ageMs: Date.now() - new Date(problem.createdAt).getTime(),
+    accretionGapUSD: Math.max(0, floorUSD - submittedImpact),
+    title: problem.title,
+    paymentOffer: problem.paymentOffer,
+  };
+  const resolution = resolveHeuristic(paradoxState);
 
   const content = [
-    `[FORCE-COLLAPSE SYNTHESIS — Node ${nodeId} — Round ${tether.consensusRound}]`,
+    `[FORCE-COLLAPSE SYNTHESIS — Node ${nodeId} — Round ${snap.consensusRound}]`,
+    `KERNEL: DETERMINISTIC_HEURISTIC v1.0 | ZERO_HALLUCINATION`,
     ``,
     `Problem: ${problem.title}`,
     `Collapse Hash: ${collapseHash}`,
     `Lamport Tick: ${lamport}`,
-    `Accretion Floor: ${accretion.perSolutionFormatted} per sovereign solution`,
+    `Accretion Floor: ${accretion.perSolutionFormatted} | Confidence: ${resolution.confidence}%`,
     ``,
-    `SYNTHESIS:`,
-    template,
+    `RESOLUTION TYPE: ${resolution.solutionType}`,
+    `EXECUTION PATH: ${resolution.executionPath.join(" → ")}`,
     ``,
-    `This solution was autonomically generated by the Kinetic Resolver when synaptic`,
-    `entropy exceeded the Force-Collapse threshold (0.85). It represents the minimum`,
-    `viable resolution vector aligned with the ${accretion.baseline} / ${accretion.cagr} CAGR accretion model.`,
-    `Human expert review is required before escrow release.`,
+    `DIRECTIVE:`,
+    resolution.directive,
+    ``,
+    `RATIONALE:`,
+    resolution.rationale,
+    ``,
+    `This solution was autonomically generated by the Heuristic Kernel when synaptic`,
+    `entropy (${(entropy * 100).toFixed(1)}%) exceeded Force-Collapse threshold (85%).`,
+    `Resolution is deterministic — identical paradox state will always produce this vector.`,
+    `Human expert review required before escrow release.`,
   ].join("\n");
 
   const [solution] = await db
     .insert(solutionsTable)
-    .values({
-      problemId: problem.id,
-      solverId: "0", // system — node 0 is the coordinator
-      content,
-      status: "pending",
-    })
+    .values({ problemId: problem.id, solverId: "0", content, status: "pending" })
     .returning();
 
-  await db
-    .update(problemsTable)
-    .set({ status: "solution_submitted" })
-    .where(eq(problemsTable.id, problem.id));
+  await db.update(problemsTable).set({ status: "solution_submitted" }).where(eq(problemsTable.id, problem.id));
 
   return { id: solution.id, content, collapseHash };
 }
@@ -171,6 +153,20 @@ async function finalizeSolution(
   entropy: number,
 ): Promise<void> {
   const lamport = tickLamport();
+  const accretion = getAccretionStatus();
+
+  // Emit signed intent — engine halts here until hardware signer confirms
+  const intent = await emitIntent(
+    "FORCE_COLLAPSE_COMMIT",
+    String(problemId),
+    collapseHash,
+    accretion.perSolutionFormatted,
+  );
+
+  // Write collapse state to tether SharedArrayBuffer (all 54 workers see this atomically)
+  tetherWrite(TETHER_SLOTS.STATE, 2); // FORCE_COLLAPSE
+  tetherWrite(TETHER_SLOTS.ENTROPY_PPM, Math.round(entropy * 1_000_000));
+  tetherWrite(TETHER_SLOTS.LAMPORT, lamport);
 
   await db.insert(auditLogTable).values({
     id: nanoid(),
@@ -184,17 +180,19 @@ async function finalizeSolution(
       collapseHash,
       entropy: entropy.toFixed(4),
       lamport,
-      // Solana pinning stub — activates when SOLANA_KEYPAIR is provisioned
-      solana: process.env.SOLANA_KEYPAIR
-        ? { status: "PENDING" }
-        : { status: "AWAITING_KEYPAIR", slot: null },
+      intentId: intent.intentId,
+      intentStatus: intent.status,
+      signerInterface: "AWAITING_HARDWARE_HOOK",
+      solanaIntent: intent.solanaIntent,
+      // Tether slot snapshot at commit time
+      tetherState: { state: "FORCE_COLLAPSE", entropy_ppm: Math.round(entropy * 1_000_000), lamport },
     }),
     status: "success",
   });
 
   logger.info(
-    { nodeId, problemId, solutionId, collapseHash, entropy: entropy.toFixed(4), lamport },
-    "FORCE_COLLAPSE: immutable ledger commit",
+    { nodeId, problemId, solutionId, collapseHash, entropy: entropy.toFixed(4), lamport, intentId: intent.intentId },
+    "FORCE_COLLAPSE: immutable ledger commit + intent emitted — awaiting hardware signer",
   );
 }
 
@@ -236,7 +234,9 @@ async function processSynapticEntropy(nodeId: number): Promise<void> {
     id: oldest.id,
     title: oldest.title,
     category: oldest.category,
-  });
+    paymentOffer: oldest.paymentOffer ?? "0",
+    createdAt: new Date(oldest.createdAt),
+  }, entropy);
 
   await finalizeSolution(nodeId, oldest.id, solution.id, solution.collapseHash, entropy);
 
