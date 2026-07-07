@@ -194,6 +194,23 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-088", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "NIST SP 800-53 Least-Privilege Assigner",         description: "Temporarily elevates permissions only when executing highly critical system tasks, de-escalating immediately after." },
   { id: "S-089", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "ISO 27001 Vulnerability Scanner",                  description: "Routinely scans the sandbox and dynamic library registry for deprecated or vulnerable functions." },
   { id: "S-090", layer: 6, layerName: "Regulatory Compliance & SOC 2 Auditing", name: "Sovereign Compliance Self-Reporting Agent",        description: "Compiles complete, formatted compliance reports, proving ongoing SOC 2 adherence automatically." },
+
+  // ─── LAYER 7: COGNITIVE MEMORY, PHEROMONES & AUTONOMIC HEALING (S-091–S-105)
+  { id: "S-091", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Pheromone-Guided Spatial Attractor",       description: "Emits digital signal pulses that draw search requests toward high-performing nodes." },
+  { id: "S-092", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Adverse Signal Repulsion Protocol",        description: "Signals neighboring nodes to avoid routes experiencing packet loss or abnormal delay." },
+  { id: "S-093", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Memory-Entropy Coherence Engine",          description: "Re-orders local memory caches during background processing to prevent thermal/radioactive data decay." },
+  { id: "S-094", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Autonomic Healing Task Spawn Loop",        description: "Automatically restarts failed micro-services within 10 milliseconds of a crash." },
+  { id: "S-095", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Dynamic Cognitive Memory Brancher",        description: "Clones current application states into parallel memory branches for risk-free sandbox testing." },
+  { id: "S-096", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Pheromone Decay Coefficient Adjuster",     description: "Tunes decay speed to prevent stale, dead routing paths from lingering in the spatial network." },
+  { id: "S-097", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Background Memory Defragmenter",           description: "Moves isolated memory blocks into contiguous chunks during idle CPU cycles to optimize heap space." },
+  { id: "S-098", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Autonomic Resource Allocator",             description: "Re-prioritizes processing power dynamically based on user engagement levels." },
+  { id: "S-099", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Predictive Failure Detection Engine",      description: "Monitors hardware health trends to migrate critical workloads away from failing nodes before they crash." },
+  { id: "S-100", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Cognitive Memory Reintegration Loop",      description: "Merges verified test branches back into the primary memory trunk with zero operational downtime." },
+  { id: "S-101", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Self-Healing File System Restorer",        description: "Repairs corrupted storage database blocks using parity blocks distributed across the mesh." },
+  { id: "S-102", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Cognitive Thread Scheduling Balancer",     description: "Balances threads dynamically based on historical computation cycles." },
+  { id: "S-103", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Autonomic Heat Dissipation Governor",      description: "Adjusts clock speed and background task rates to maintain safe operating temperatures." },
+  { id: "S-104", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Self-Adjusting Buffer Margin Guard",       description: "Expands network buffers during burst traffic events and thins them during quiet periods to conserve RAM." },
+  { id: "S-105", layer: 7, layerName: "Cognitive Memory, Pheromones & Autonomic Healing", name: "Sovereign System Homeostasis Monitor",     description: "Continuously evaluates overall system health metrics to trigger self-healing protocols as needed." },
 ];
 
 export const SOLUTION_LAYERS = [
@@ -203,6 +220,7 @@ export const SOLUTION_LAYERS = [
   { num: 4, name: "Ad-Hoc Routing, Mesh & DHT Networking",      solutions: 15, color: "#F59E0B", symbol: "◈", desc: "AODV self-healing mesh, DHT finger tables, pheromone decay and opportunistic forwarding" },
   { num: 5, name: "Consensus Mechanics & Distributed State",    solutions: 15, color: "#F87171", symbol: "⬟", desc: "Fractal consensus, CRDT, BFT validation, quorum adjustment and gossip synchronization" },
   { num: 6, name: "Regulatory Compliance & SOC 2 Auditing",    solutions: 15, color: "#D4AF37", symbol: "⚖", desc: "NIST SP 800-53, SOC 2, ISO 27001 — continuous audit trails, boot attestation and drift rectification" },
+  { num: 7, name: "Cognitive Memory, Pheromones & Autonomic Healing", solutions: 15, color: "#E879F9", symbol: "𓁙", desc: "Pheromone attractors, memory coherence, autonomic healing loops and sovereign homeostasis" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
