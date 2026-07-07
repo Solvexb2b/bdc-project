@@ -337,7 +337,7 @@ export default function Home() {
             "We offer not just a result, but a transparent audit trail of a perfectly executed, paradox-based outcome."
           </h3>
           <p style={{ fontSize: 13, color: "#5B6480", marginBottom: 28 }}>
-            31 Tier-1 enterprise solutions. Each mathematically verified before purchase.
+            105 Tier-1 enterprise solutions. Each mathematically verified before purchase.
           </p>
           <Link href="/marketplace">
             <div style={{
@@ -346,7 +346,7 @@ export default function Home() {
               color: "#05080F", fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 11, fontWeight: 900, letterSpacing: "0.2em", cursor: "pointer",
             }}>
-              ACCESS THE 31 ENTERPRISE SOLUTIONS →
+              ACCESS THE 105 ENTERPRISE SOLUTIONS →
             </div>
           </Link>
         </div>
