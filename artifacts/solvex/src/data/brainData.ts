@@ -160,6 +160,23 @@ export const SOVEREIGN_SOLUTIONS: SovereignSolution[] = [
   { id: "S-058", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Asymmetrical Link Margin Estimator",               description: "Evaluates signal strength in both directions to prevent routing through unreliable, one-way channels." },
   { id: "S-059", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "Multi-Hop Mesh Packet Fragmenter",                 description: "Slices large transactions into tiny MTU-optimized frames to maintain high packet transmission success rates." },
   { id: "S-060", layer: 4, layerName: "Ad-Hoc Routing, Mesh & DHT Networking", name: "DHT Anti-Entropy Synchronizer",                    description: "Performs lightweight, background peer-to-peer data gossiping to maintain dynamic hash table completeness." },
+
+  // ─── LAYER 5: CONSENSUS MECHANICS & DISTRIBUTED STATE (S-061–S-075) ─────
+  { id: "S-061", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Fractal Consensus Protocol",                      description: "Establishes fast, localized agreement among nested node clusters before propagating updates to the wider mesh." },
+  { id: "S-062", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "CRDT Engine",                                     description: "Merges concurrent data writes mathematically without needing locks, resolving collisions deterministically." },
+  { id: "S-063", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "MVCC Ledger",                                     description: "Keeps transaction histories version-stamped, allowing lock-free reads while writing new updates." },
+  { id: "S-064", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Distributed State Machine Replication",           description: "Synchronizes local microkernel state machines across multiple mesh devices." },
+  { id: "S-065", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Split-Brain Reintegration Resolver",              description: "Merges conflicting databases post-isolation, prioritizing the chain with higher verifiable consensus proof." },
+  { id: "S-066", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Fast-Paxos Agreement Coordinator",                description: "Achieves transaction consensus in a single round-trip under optimal network conditions." },
+  { id: "S-067", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "State Sprawl Prevention Daemon",                  description: "Constrains data replication boundaries to prevent excessive system-wide memory exhaustion." },
+  { id: "S-068", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Consensus Quorum Adaptive Adjuster",              description: "Dynamically resizes quorum requirements based on the number of active, verified online peers." },
+  { id: "S-069", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Optimistic Transaction Committer",                description: "Executes transactions locally first, rolling them back only if a consensus conflict is detected." },
+  { id: "S-070", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Byzantine Fault Tolerant State Validator",        description: "Guarantees correct transaction execution even if up to one-third of cluster nodes behave maliciously." },
+  { id: "S-071", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Anti-Sybil Node Identity Verifier",               description: "Challenges peer nodes with computation-heavy puzzles to verify physical hardware uniqueness." },
+  { id: "S-072", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Gossip-Protocol State Synchronizer",              description: "Spreads local consensus updates across the network rapidly like an epidemic algorithm." },
+  { id: "S-073", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Atomic Commit Protocol Guard",                    description: "Coordinates multi-node state modifications to ensure they either succeed fully or fail without side effects." },
+  { id: "S-074", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Consensus Sequence Nonce Counter",                description: "Enforces sequential transaction application to eliminate replay attacks." },
+  { id: "S-075", layer: 5, layerName: "Consensus Mechanics & Distributed State", name: "Local DB Transaction Commit Journal",             description: "Records critical state transitions in an append-only journal file before writing to disk." },
 ];
 
 export const SOLUTION_LAYERS = [
@@ -167,6 +184,7 @@ export const SOLUTION_LAYERS = [
   { num: 2, name: "Enclave Cryptography & Sandboxed Security", solutions: 15, color: "#A78BFA", symbol: "⬡", desc: "Military-grade enclaves, zero-knowledge proofs, memory isolation and bytecode verification" },
   { num: 3, name: "Hardware Orchestration & Bare-Metal Access", solutions: 15, color: "#34D399", symbol: "⬢", desc: "Direct register mapping, DMA pipelines, thread pinning and zero-copy hardware access" },
   { num: 4, name: "Ad-Hoc Routing, Mesh & DHT Networking",      solutions: 15, color: "#F59E0B", symbol: "◈", desc: "AODV self-healing mesh, DHT finger tables, pheromone decay and opportunistic forwarding" },
+  { num: 5, name: "Consensus Mechanics & Distributed State",    solutions: 15, color: "#F87171", symbol: "⬟", desc: "Fractal consensus, CRDT, BFT validation, quorum adjustment and gossip synchronization" },
 ];
 
 export const BRAIN_PRODUCTS: BrainProduct[] = [
