@@ -2,7 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { conversations, messages } from "@workspace/db";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { textToSpeechStream } from "@workspace/integrations-openai-ai-server/audio";
+import { textToSpeech } from "@workspace/integrations-openai-ai-server/audio";
 import { eq, asc } from "drizzle-orm";
 import { requireAuth } from "../middlewares/requireOwner";
 
@@ -133,15 +133,21 @@ router.post("/openai/conversations/:id/tts", async (req, res) => {
   const { text } = req.body as { text: string };
   if (!text) { res.status(400).json({ error: "text required" }); return; }
 
-  res.setHeader("Content-Type", "audio/mpeg");
-  res.setHeader("Transfer-Encoding", "chunked");
-  res.setHeader("Cache-Control", "no-cache");
-
-  const stream = await textToSpeechStream(text.slice(0, 4000), "nova");
-  for await (const chunk of stream) {
-    res.write(chunk);
+  try {
+    // textToSpeechStream yields base64 PCM16 text (not decodable by browsers);
+    // use non-streaming textToSpeech which returns a complete, playable WAV buffer.
+    const audio = await textToSpeech(text.slice(0, 4000), "nova", "wav");
+    if (!audio || audio.length === 0) {
+      res.status(502).json({ error: "Voice synthesis returned no audio" });
+      return;
+    }
+    res.setHeader("Content-Type", "audio/wav");
+    res.setHeader("Cache-Control", "no-cache");
+    res.send(audio);
+  } catch (err) {
+    req.log.error({ err }, "TTS failed");
+    res.status(502).json({ error: "Voice synthesis failed" });
   }
-  res.end();
 });
 
 export default router;

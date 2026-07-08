@@ -4,3 +4,4 @@
 - [Gemini integration blocked](gemini-blocked.md) — Replit Gemini integration requires phone verification; brain chat uses persona-based fallback at /api/brain/chat
 - [dAIsy voice / autoplay](daisy-voice-autoplay.md) — Web Audio must be unlocked synchronously in the gesture handler; late AudioContext = silent 200s
 - [Autonomous outreach engine](outreach-engine.md) — hunts real HN/StackExchange posts (open APIs); Reddit 403s from cloud; never fake sends/revenue — user requires honesty
+- [TTS audio format gotcha](tts-audio.md) — textToSpeechStream yields base64 PCM16 text, not audio; use textToSpeech(...,"wav") for browser playback
