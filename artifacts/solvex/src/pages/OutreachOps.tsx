@@ -83,6 +83,29 @@ export default function OutreachOps() {
   const [events, setEvents] = useState<OutreachEvent[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [emailInputs, setEmailInputs] = useState<Record<number, string>>({});
+  const [sendState, setSendState] = useState<Record<number, { status: "sending" | "sent" | "error"; msg?: string }>>({});
+
+  const sendDraft = async (id: number) => {
+    const to = (emailInputs[id] ?? "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      setSendState(s => ({ ...s, [id]: { status: "error", msg: "Enter a valid email address" } }));
+      return;
+    }
+    setSendState(s => ({ ...s, [id]: { status: "sending" } }));
+    try {
+      const res = await fetch(`/api/outreach/prospects/${id}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Send failed");
+      setSendState(s => ({ ...s, [id]: { status: "sent" } }));
+    } catch (err) {
+      setSendState(s => ({ ...s, [id]: { status: "error", msg: (err as Error).message } }));
+    }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -139,6 +162,19 @@ export default function OutreachOps() {
                 </span>
               </div>
             )}
+            {stats?.channelConnected && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", border: `1px solid ${GREEN}44`, background: `${GREEN}0D` }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: GREEN, boxShadow: `0 0 8px ${GREEN}`, display: "inline-block" }} />
+                <span style={{ fontSize: 8, color: GREEN, letterSpacing: "0.16em", fontWeight: 700 }}>
+                  EMAIL CHANNEL: CONNECTED (GMAIL) — add a recipient address on any draft to send it
+                </span>
+              </div>
+            )}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", border: `1px solid ${AMBER}44`, background: `${AMBER}0D` }}>
+              <span style={{ fontSize: 8, color: AMBER, letterSpacing: "0.16em", fontWeight: 700 }}>
+                REDDIT: NOT CONNECTED — forum replies remain manual (copy the draft to the source thread)
+              </span>
+            </div>
           </div>
         </div>
 
@@ -221,9 +257,43 @@ export default function OutreachOps() {
                       {open && p.draftMessage && (
                         <div style={{ marginTop: 10, padding: "10px 14px", border: `1px solid ${GOLD}33`, background: "rgba(212,175,55,0.04)" }}>
                           <div style={{ fontSize: 7, color: GOLD, letterSpacing: "0.16em", marginBottom: 6, fontWeight: 700 }}>
-                            COMPOSED REPLY — QUEUED FOR DELIVERY
+                            {p.stage === "delivered" ? "REPLY DELIVERED VIA EMAIL" : "COMPOSED REPLY — QUEUED FOR DELIVERY"}
                           </div>
                           <div style={{ fontSize: 9.5, color: "#C8C9D0", lineHeight: 1.75, whiteSpace: "pre-wrap" }}>{p.draftMessage}</div>
+                          {p.stage === "composed" && stats?.channelConnected && (
+                            <div onClick={e => e.stopPropagation()} style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              <input
+                                type="email"
+                                placeholder="recipient@company.com"
+                                value={emailInputs[p.id] ?? ""}
+                                onChange={e => setEmailInputs(s => ({ ...s, [p.id]: e.target.value }))}
+                                style={{
+                                  fontFamily: MONO, fontSize: 9, color: "#E8E9F0", background: "rgba(7,9,26,0.9)",
+                                  border: "1px solid #2A3350", padding: "7px 10px", outline: "none", flex: 1, minWidth: 200,
+                                }}
+                              />
+                              <button
+                                onClick={() => void sendDraft(p.id)}
+                                disabled={sendState[p.id]?.status === "sending" || sendState[p.id]?.status === "sent"}
+                                style={{
+                                  fontFamily: MONO, fontSize: 8, fontWeight: 800, letterSpacing: "0.14em",
+                                  color: sendState[p.id]?.status === "sent" ? GREEN : "#07091A",
+                                  background: sendState[p.id]?.status === "sent" ? "transparent" : GREEN,
+                                  border: `1px solid ${GREEN}`, padding: "7px 14px",
+                                  cursor: sendState[p.id]?.status === "sending" ? "wait" : "pointer",
+                                }}
+                              >
+                                {sendState[p.id]?.status === "sending" ? "SENDING…" : sendState[p.id]?.status === "sent" ? "✓ SENT" : "SEND VIA GMAIL"}
+                              </button>
+                              {sendState[p.id]?.status === "error" && (
+                                <span style={{ fontSize: 8, color: RED }}>{sendState[p.id]?.msg}</span>
+                              )}
+                              <div style={{ fontSize: 7.5, color: "#5B6480", width: "100%", lineHeight: 1.6 }}>
+                                Forum posts don't expose email addresses — enter one only if you've found the author's
+                                real contact. Otherwise reply directly on the source thread using this draft.
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       {open && !p.draftMessage && (
