@@ -13,6 +13,7 @@ import ChallengeHub from "./pages/ChallengeHub";
 import Library from "./pages/Library";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Analytics from "./pages/Analytics";
+import OutreachOps from "./pages/OutreachOps";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/library" component={Library} />
       <Route path="/owner" component={OwnerDashboard} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/outreach" component={OutreachOps} />
       <Route path="/login" component={() => <div className="min-h-screen flex items-center justify-center bg-background"><a href="/api/auth/login" className="text-primary font-mono text-xl hover:underline">Authenticate via Manus</a></div>} />
       <Route component={NotFound} />
     </Switch>

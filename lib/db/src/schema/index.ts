@@ -15,3 +15,4 @@ export * from "./delivery";
 export * from "./challenge-hub";
 export * from "./conversations";
 export * from "./messages";
+export * from "./outreach";

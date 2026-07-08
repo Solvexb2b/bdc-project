@@ -23,6 +23,7 @@ import deliveryRouter from "./delivery";
 import challengesRouter from "./challenges";
 import quantumRouter from "./quantum";
 import openaiRouter from "./openai";
+import outreachRouter from "./outreach";
 
 const router: IRouter = Router();
 
@@ -50,5 +51,6 @@ router.use(deliveryRouter);
 router.use(challengesRouter);
 router.use(quantumRouter);
 router.use(openaiRouter);
+router.use(outreachRouter);
 
 export default router;

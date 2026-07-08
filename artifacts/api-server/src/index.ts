@@ -5,6 +5,7 @@ import { initializeWorkerPool } from "./lib/workers";
 import { initVaultSidecar } from "./lib/vault";
 import { runKineticCore } from "./lib/kinetic";
 import { startAutonomousCrawler } from "./lib/crawler";
+import { startOutreachEngine } from "./lib/outreach";
 import { runMigrations } from "stripe-replit-sync";
 import { getStripeSync } from "./lib/stripeClient";
 
@@ -67,6 +68,9 @@ app.listen(port, (err) => {
 
   // Autonomous Crawler: HN + Reddit + StackOverflow — fires 5s after boot, then every 10min
   startAutonomousCrawler();
+
+  // Autonomous Outreach Engine: dAIsy discovers prospects, pitches, negotiates pricing, closes deals — no operator input
+  startOutreachEngine();
 
   // Payment rails: Stripe schema + webhook + backfill (non-blocking, graceful if not connected)
   initStripe();

@@ -91,43 +91,62 @@ async function* streamText(convId: number, userMsg: string, signal: AbortSignal)
   }
 }
 
-function speakText(text: string, convId: number, onStart: () => void, onDone: () => void): () => void {
+/** Trim TTS text to a sentence boundary so voice starts fast (~5s instead of ~20s). */
+function ttsSlice(text: string, max = 700): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastEnd = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "), cut.lastIndexOf(".\n"));
+  return lastEnd > 200 ? cut.slice(0, lastEnd + 1) : cut;
+}
+
+function speakText(
+  text: string,
+  convId: number,
+  ctx: AudioContext | null,
+  onStart: () => void,
+  onDone: () => void,
+  onFail: (why: string) => void,
+): () => void {
   let stopped = false;
-  let ctx: AudioContext | null = null;
-  const stop = () => { stopped = true; try { ctx?.close(); } catch { /* noop */ } };
+  let src: AudioBufferSourceNode | null = null;
+  const stop = () => {
+    stopped = true;
+    if (src) { src.onended = null; } // detach so a superseded source can't fire callbacks
+    try { src?.stop(); } catch { /* noop */ }
+    src = null;
+  };
 
   (async () => {
     try {
       const resp = await fetch(`/api/openai/conversations/${convId}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: ttsSlice(text) }),
       });
-      if (!resp.ok || !resp.body || stopped) { onDone(); return; }
-
-      const reader = resp.body.getReader();
-      const chunks: Uint8Array[] = [];
-      while (true) {
-        const { done, value } = await reader.read();
-        if (stopped) { onDone(); return; }
-        if (done) break;
-        if (value) chunks.push(value);
-      }
-      const total = chunks.reduce((a, c) => a + c.length, 0);
-      const merged = new Uint8Array(total);
-      let off = 0;
-      for (const c of chunks) { merged.set(c, off); off += c.length; }
-
+      if (!resp.ok) { onFail(`voice synthesis failed (${resp.status})`); onDone(); return; }
+      const buf = await resp.arrayBuffer();
       if (stopped) { onDone(); return; }
-      ctx = new AudioContext();
-      const audioBuf = await ctx.decodeAudioData(merged.buffer);
-      const src = ctx.createBufferSource();
+
+      const audioCtx = ctx ?? new AudioContext();
+      if (audioCtx.state === "suspended") {
+        try { await audioCtx.resume(); } catch { /* browsers may still allow start() */ }
+      }
+      const audioBuf = await audioCtx.decodeAudioData(buf);
+      if (stopped) { onDone(); return; }
+
+      src = audioCtx.createBufferSource();
       src.buffer = audioBuf;
-      src.connect(ctx.destination);
+      src.connect(audioCtx.destination);
+      src.onended = () => onDone();
       onStart();
-      src.onended = () => { try { ctx?.close(); } catch { /* noop */ } onDone(); };
       src.start();
-    } catch {
+
+      // If the context is still suspended, the browser blocked autoplay.
+      if (audioCtx.state === "suspended") {
+        onFail("audio blocked by browser — click anywhere, then press ▶ REPLAY VOICE");
+      }
+    } catch (err) {
+      onFail(`voice playback error — ${(err as Error).message}`);
       onDone();
     }
   })();
@@ -137,7 +156,7 @@ function speakText(text: string, convId: number, onStart: () => void, onDone: ()
 
 /* ─── Full-screen Process Interface ─────────────────────────── */
 function ProcessInterface({
-  directive, response, step, flowState, error, onClose, onStop,
+  directive, response, step, flowState, error, onClose, onStop, onFollowUp, onReplay,
 }: {
   directive: string;
   response: string;
@@ -146,11 +165,22 @@ function ProcessInterface({
   error: string | null;
   onClose: () => void;
   onStop: () => void;
+  onFollowUp: (text: string) => void;
+  onReplay: () => void;
 }) {
   const termRef = useRef<HTMLDivElement>(null);
+  const [followUp, setFollowUp] = useState("");
   useEffect(() => {
     termRef.current?.scrollTo({ top: termRef.current.scrollHeight });
   }, [response]);
+
+  const busy = flowState === "processing" || flowState === "streaming";
+  const submitFollowUp = () => {
+    const t = followUp.trim();
+    if (!t || busy) return;
+    setFollowUp("");
+    onFollowUp(t);
+  };
 
   return (
     <div style={{
@@ -304,6 +334,42 @@ function ProcessInterface({
               </div>
             )}
           </div>
+
+          {/* Follow-up directive bar — continue the conversation without leaving the interface */}
+          <div style={{
+            borderTop: "1px solid #141A2E", padding: "12px 20px",
+            display: "flex", gap: 10, alignItems: "center",
+          }}>
+            <span style={{ fontSize: 8, color: GOLD, letterSpacing: "0.12em", flexShrink: 0 }}>↳ FOLLOW-UP</span>
+            <input
+              className="df-input"
+              value={followUp}
+              onChange={e => setFollowUp(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") submitFollowUp(); }}
+              placeholder={busy ? "dAIsy is synthesizing — HALT to interrupt…" : "Respond to dAIsy — she remembers the full conversation…"}
+              disabled={busy}
+              autoFocus
+              style={{
+                flex: 1, background: "rgba(10,14,26,0.8)",
+                border: "1px solid #1A2035", color: "#C8C9D0",
+                fontFamily: MONO, fontSize: 11, padding: "10px 14px",
+                opacity: busy ? 0.5 : 1, transition: "border-color 0.2s, opacity 0.2s",
+              }}
+            />
+            {response && !busy && (
+              <button onClick={onReplay} title="Replay voice" style={{
+                height: 38, padding: "0 14px", flexShrink: 0, cursor: "pointer",
+                background: "transparent", border: `1px solid ${PURPLE}55`, color: PURPLE,
+                fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: "0.12em",
+              }}>▶ REPLAY VOICE</button>
+            )}
+            <button onClick={submitFollowUp} disabled={busy} style={{
+              height: 38, padding: "0 20px", flexShrink: 0, cursor: busy ? "default" : "pointer",
+              background: busy ? "#1A2035" : `linear-gradient(135deg, ${GOLD}, #B8860B)`,
+              border: "none", color: busy ? "#3D4560" : "#05080F",
+              fontFamily: MONO, fontSize: 9, fontWeight: 900, letterSpacing: "0.12em",
+            }}>SEND →</button>
+          </div>
         </div>
       </div>
     </div>
@@ -325,6 +391,8 @@ export function DaisyFloat() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const flowRef = useRef<FlowState>("idle");
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const lastSpokenRef = useRef<{ text: string; cid: number } | null>(null);
   const stopTtsRef = useRef<(() => void) | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<number[]>([]);
@@ -376,6 +444,31 @@ export function DaisyFloat() {
     stopTtsRef.current?.();
     for (const t of timersRef.current) window.clearTimeout(t);
     recRef.current?.stop?.();
+    try { void audioCtxRef.current?.close(); } catch { /* noop */ }
+    audioCtxRef.current = null;
+  }, []);
+
+  /** Must be called synchronously inside a user-gesture handler so the browser unlocks audio. */
+  const unlockAudio = useCallback(() => {
+    try {
+      if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+        audioCtxRef.current = new AudioContext();
+      }
+      if (audioCtxRef.current.state === "suspended") {
+        void audioCtxRef.current.resume();
+      }
+    } catch { /* audio unsupported — voice will fail gracefully */ }
+  }, []);
+
+  const startSpeaking = useCallback((full: string, cid: number, runId: number) => {
+    lastSpokenRef.current = { text: full, cid };
+    stopTtsRef.current?.();
+    stopTtsRef.current = speakText(
+      full, cid, audioCtxRef.current,
+      () => { if (runIdRef.current === runId) setFlowState("speaking"); },
+      () => { if (runIdRef.current === runId) setFlowState("idle"); },
+      (why) => { if (runIdRef.current === runId) setErrorMsg(`VOICE FAULT — ${why}`); },
+    );
   }, []);
 
   const runDirective = useCallback(async (text: string) => {
@@ -411,12 +504,7 @@ export function DaisyFloat() {
 
       setStep(4);
       setFlowState("processing");
-      const stopFn = speakText(
-        full, cid,
-        () => { if (runIdRef.current === runId) setFlowState("speaking"); },
-        () => { if (runIdRef.current === runId) setFlowState("idle"); },
-      );
-      stopTtsRef.current = stopFn;
+      startSpeaking(full, cid, runId);
     } catch (err) {
       if (runIdRef.current !== runId) return;
       if ((err as Error).name === "AbortError") return;
@@ -424,16 +512,33 @@ export function DaisyFloat() {
       setErrorMsg(`TRANSMISSION FAULT — ${(err as Error).message}. Retry the directive.`);
       setFlowState("idle");
     }
-  }, [getConversationId, haltAll, clearTimers]);
+  }, [getConversationId, haltAll, clearTimers, startSpeaking]);
 
   const handleSubmit = useCallback(() => {
     const text = input.trim();
     if (!text || flowRef.current === "processing" || flowRef.current === "streaming") return;
+    unlockAudio();
     setInput("");
     void runDirective(text);
-  }, [input, runDirective]);
+  }, [input, runDirective, unlockAudio]);
+
+  const handleFollowUp = useCallback((text: string) => {
+    unlockAudio();
+    void runDirective(text);
+  }, [runDirective, unlockAudio]);
+
+  const handleReplay = useCallback(() => {
+    unlockAudio();
+    const last = lastSpokenRef.current;
+    if (!last) return;
+    setErrorMsg(null);
+    // Treat replay as a new run so any stale onended from a prior source can't flip UI state
+    const runId = ++runIdRef.current;
+    startSpeaking(last.text, last.cid, runId);
+  }, [unlockAudio, startSpeaking]);
 
   const handleMic = useCallback(() => {
+    unlockAudio();
     if (flowRef.current === "listening") { recRef.current?.stop(); return; }
     const SR = window.SpeechRecognition ?? window.webkitSpeechRecognition;
     if (!SR) {
@@ -456,7 +561,7 @@ export function DaisyFloat() {
     rec.onerror = () => setFlowState("idle");
     rec.onend = () => { if (flowRef.current === "listening") setFlowState("idle"); };
     rec.start();
-  }, [runDirective]);
+  }, [runDirective, unlockAudio]);
 
   const borderColor = flowState === "listening" ? GREEN : flowState === "speaking" ? PURPLE : GOLD;
   const headGlow = flowState === "listening" ? "df-gl 1.2s ease-in-out infinite"
@@ -474,6 +579,8 @@ export function DaisyFloat() {
           error={errorMsg}
           onClose={() => { haltAll(); setShowInterface(false); }}
           onStop={haltAll}
+          onFollowUp={handleFollowUp}
+          onReplay={handleReplay}
         />
       )}
 

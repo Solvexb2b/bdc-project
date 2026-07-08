@@ -101,6 +101,7 @@ function OmniscientTerminal() {
 
 const NAV_ITEMS = [
   { href: "/marketplace", label: "PARADOX VAULT", icon: "◈" },
+  { href: "/outreach", label: "OUTREACH OPS", icon: "⇶" },
   { href: "/brain", label: "BRAIN CONSOLE", icon: "◉" },
   { href: "/challenges", label: "CHALLENGE HUB", icon: "⬡" },
   { href: "/library", label: "SOLUTION LIBRARY", icon: "▣" },
