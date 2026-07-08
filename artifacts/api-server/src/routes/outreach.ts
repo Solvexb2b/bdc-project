@@ -9,14 +9,14 @@ router.get("/outreach/stats", async (_req, res) => {
   const [row] = await db
     .select({
       total: sql<number>`count(*)::int`,
-      active: sql<number>`count(*) filter (where ${outreachProspects.stage} not in ('closed_won','closed_lost'))::int`,
-      won: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'closed_won')::int`,
-      lost: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'closed_lost')::int`,
-      pipelineEth: sql<string>`coalesce(sum(${outreachProspects.proposedPriceEth}) filter (where ${outreachProspects.stage} in ('pitched','negotiating')), 0)::text`,
-      closedEth: sql<string>`coalesce(sum(${outreachProspects.proposedPriceEth}) filter (where ${outreachProspects.stage} = 'closed_won'), 0)::text`,
+      newLeads: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'discovered')::int`,
+      draftsReady: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'composed')::int`,
+      delivered: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'delivered')::int`,
+      replies: sql<number>`count(*) filter (where ${outreachProspects.stage} = 'replied')::int`,
+      unanswered: sql<number>`count(*) filter (where ${outreachProspects.unanswered})::int`,
     })
     .from(outreachProspects);
-  res.json(row);
+  res.json({ ...row, channelConnected: false });
 });
 
 router.get("/outreach/prospects", async (_req, res) => {

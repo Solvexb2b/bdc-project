@@ -3,4 +3,4 @@
 - [Brain architecture](brain-architecture.md) — U.A.R.E.F.A.K.E. 59-paradox engine, 5 chambers, dAIsy haMINJA persona, admin passcode, IRS-First Rule
 - [Gemini integration blocked](gemini-blocked.md) — Replit Gemini integration requires phone verification; brain chat uses persona-based fallback at /api/brain/chat
 - [dAIsy voice / autoplay](daisy-voice-autoplay.md) — Web Audio must be unlocked synchronously in the gesture handler; late AudioContext = silent 200s
-- [Autonomous outreach engine](outreach-engine.md) — 40s-tick server loop sells autonomously with AI-composed pitches + template fallback; in-platform only, no real emails
+- [Autonomous outreach engine](outreach-engine.md) — hunts real HN/StackExchange posts (open APIs); Reddit 403s from cloud; never fake sends/revenue — user requires honesty
