@@ -135,14 +135,14 @@ export default function Home() {
             style={{ height: 52, width: "auto", objectFit: "contain" }}
           />
           <div>
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: "0.22em", color: "#3D4560" }}>INSTITUTIONAL MARKETPLACE</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: "0.22em", color: "#3D4560" }}>THE SHOWROOM FLOOR</div>
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 7, letterSpacing: "0.16em", color: "#2A3050" }}>OSFI B-13 · FINTRAC · PIPEDA · SOC 2</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <Link href="/marketplace">
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: "0.15em", color: "#9BA3B5", cursor: "pointer" }}>
-              PARADOX VAULT
+              SHOWROOM FLOOR
             </div>
           </Link>
           <Link href="/marketplace">
@@ -152,7 +152,7 @@ export default function Home() {
               color: "#05080F", fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 10, fontWeight: 800, letterSpacing: "0.15em", cursor: "pointer",
             }}>
-              ENTER VAULT →
+              WALK THE FLOOR →
             </div>
           </Link>
         </div>
@@ -184,7 +184,7 @@ export default function Home() {
             color: "#FFFFFF", letterSpacing: "-0.02em",
             margin: "0 0 12px",
           }}>
-            Crystal Clear Black Box.
+            The Showroom Floor.
           </h1>
           <h1 style={{
             fontFamily: "'Playfair Display', serif",
@@ -197,7 +197,7 @@ export default function Home() {
           <p style={{
             fontSize: 17, color: "#7B869A", maxWidth: 640, lineHeight: 1.65, marginBottom: 36,
           }}>
-            The dAIsy haMINJA Sovereign AI Brain operates on a deterministic foundation of 88 unique, solved paradoxes across 5 Chambers. 105 resolved solutions. Complete environmental observability. Absolute intellectual property protection. Trust without disclosure.
+            105 finished, Tier-1 solutions on lot display — each engineered for autonomous market outreach and distribution. Built on the dAIsy haMINJA Sovereign AI Brain: 88 solved paradoxes across 5 Chambers. Every lot finds its buyers, proves its worth, and delivers itself. Walk the floor.
           </p>
 
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
@@ -218,7 +218,7 @@ export default function Home() {
                 color: "#05080F", fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11, fontWeight: 900, letterSpacing: "0.18em", cursor: "pointer",
               }}>
-                ENTER PARADOX VAULT →
+                WALK THE SHOWROOM FLOOR →
               </div>
             </Link>
             <Link href="/brain">
