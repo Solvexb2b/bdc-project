@@ -55,13 +55,12 @@ function Library() {
   const range = ch ? CH_RANGE[ch] : null
   const chClr = ch ? CHAMBER_META[ch - 1].color : G
   
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const { cParadoxes, cSolutions } = useMemo(() => ({
     cParadoxes: range
       ? PARADOXES.filter(p => p.id >= range.min && p.id <= range.max)
       : PARADOXES,
     cSolutions: SOVEREIGN_SOLUTIONS,
-  }), [ch, range])
+  }), [range])
 
   const uniqLy = new Set(SOVEREIGN_SOLUTIONS.map(s => s.layer)).size
 

@@ -1,90 +1,258 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/DashboardLayout'
-import { BRAIN_PRODUCTS } from '@/data/brainData'
+import { BRAIN_PRODUCTS, PARADOXES } from '@/data/brainData'
+import { blink } from '@/blink/client'
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
 const FG = '#E0E0E0'; const MUTED = '#6B7280'; const BORDER = '#1A2235'
 const ACCENT = '#162040'; const GREEN = '#22C55E'; const RED = '#EF4444'
+const PURPLE = '#A78BFA'; const BLUE = '#60A5FA'; const AMBER = '#FBBF24'
 const MONO = '"IBM Plex Mono","Courier New",monospace'
 const SERIF = '"Playfair Display","Georgia",serif'
 
-/* ── Seed boot sequence ────────────────────────────────────────────────────── */
-const BOOT_LINES: { time: string; msg: string; accent?: boolean }[] = [
-  { time: '00:00:00.000', msg: 'KERNEL SOVEREIGNTY AXIOM · boot attestation · HSM nonce validated', accent: true },
-  { time: '00:00:00.412', msg: 'Chassis Controller v3.8 · bare-metal register mapping · DMA ring-buffer armed' },
-  { time: '00:00:00.871', msg: 'Memory Controller · 256 MiB non-pageable sovereign partition allocated' },
-  { time: '00:00:01.204', msg: 'Deterministic Clock Synchronizer · monotonic nanosecond pin · epoch drift ±0.0014σ' },
-  { time: '00:00:01.659', msg: 'Consensus Engine · fractal consensus protocol · quorum threshold 67%' },
-  { time: '00:00:02.103', msg: 'Zero-Sandbox Hardware Access · eBPF verifier · system-call sanitizer ONLINE' },
-  { time: '00:00:02.448', msg: 'Compliance-as-a-Service Enclave · NIST SP 800-53 · SOC 2 · ISO 27001 VERIFIED' },
-  { time: '00:00:03.001', msg: 'dAIsy haMINJA SENTINEL INTELLIGENCE PROTOCOL · U.A.R.E.F.A.K.E. convergence proof ACTIVE', accent: true },
-  { time: '00:00:03.314', msg: 'Solvex Black Box Vault · military-grade enclave · ephemeral key zeroization ARMED' },
-  { time: '00:00:03.781', msg: 'Solvex Envoy Protocol · outbound pitch security suite · end-to-end encrypted READY' },
-  { time: '00:00:04.092', msg: 'Autonomous Consensus Engine Middleware · cross-shard atomicity · split-brain guard ONLINE' },
-  { time: '00:00:04.510', msg: 'System health: ALL 13 BRAIN PRODUCTS OPERATIONAL · 7 SOLUTION LAYERS VERIFIED', accent: true },
-  { time: '00:00:04.887', msg: 'BRAIN CONSOLE READY. dAIsy haMINJA awaiting directive.', accent: true },
+/* ── Types ─────────────────────────────────────────────────────────────────── */
+interface ChatMessage { role: 'user' | 'daisy'; content: string; ts: number }
+
+interface SandboxMetrics {
+  pipelineThroughput: number; activeNodes: number
+  complianceDrift: number; eftpsQueueStatus: string
+  outboundLeads: number; closeRate: number; lastUpdateEpoch: number
+}
+
+interface OutboundProspect {
+  id: string; companyName: string; inefficiency: string
+  proposedStrategy: string; complianceChecked: string
+  estimatedRoiSavings: number; dynamicCalculatedPrice: number
+  initialContactTemplate: string
+  status: 'PENDING OPERATOR SIGN-OFF' | 'AUTHORIZED - ENGAGING' | 'NEGOTIATING SLA' | 'CONTRACT SIGNED & SECURED'
+  probability: number
+}
+
+/* ── Seed Data ─────────────────────────────────────────────────────────────── */
+const INITIAL_MSG: ChatMessage = {
+  role: 'daisy',
+  content: `dAIsy haMINJA Sovereign Core initialized. Awaiting enterprise operator directives.
+
+SYSTEM ID: SOLVEX-CORE-01 | STATUS: ACTIVE — SOVEREIGN OPERATING MODE
+U.A.R.E.F.A.K.E. ENGINE CONSOLE — 54-NODE RECURSIVE PIPELINE ONLINE
+Homeostasis Index: 98.4% | Pipeline: 420.69K ops/sec | Latency: 0.14ms jitter | P99: 0.32ms
+NIST SP 800-53 / SOC 2 TYPE II / ISO 27001 — CERTIFIED
+
+APD-01 ENGAGED: Consensus mandate active. Non-repudiation logging via L1 Lamport order.
+Paradox Box isolation on standby. IRS-First Rule armed.
+
+System governed by U.A.R.E.F.A.K.E. (Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine).
+I am the brain and operator of the SolveX B2B solutions marketplace.`,
+  ts: Date.now(),
+}
+
+const INIT_METRICS: SandboxMetrics = {
+  pipelineThroughput: 420.69, activeNodes: 14, complianceDrift: 0.00,
+  eftpsQueueStatus: 'SECURED & REMITTING', outboundLeads: 1842,
+  closeRate: 89.2, lastUpdateEpoch: Date.now(),
+}
+
+const INIT_PROSPECTS: OutboundProspect[] = [
+  {
+    id: 'prospect-1', companyName: 'NovaTech Solutions',
+    inefficiency: 'Experiencing manual tax reconciliation lag and lack of high-integrity audit logs.',
+    proposedStrategy: 'Deploy SolveX IRS Compliance Wrapper to automate 21% Tax Sequestration with real-time EFTPS remittance queuing.',
+    complianceChecked: 'NIST SP 800-53 / SOC 2 Type II controls.',
+    estimatedRoiSavings: 330000, dynamicCalculatedPrice: 72600,
+    initialContactTemplate: 'To NovaTech Operations: We have mapped your manual compliance lag. Proposed integration of SolveX U.A.R.E.F.A.K.E. to automate 21% CIT withholdings.',
+    status: 'PENDING OPERATOR SIGN-OFF', probability: 89.4,
+  },
+  {
+    id: 'prospect-2', companyName: 'Apex Logistics Corp',
+    inefficiency: 'Sub-optimal multi-layered contract execution and temporal race conditions.',
+    proposedStrategy: 'Integrate SolveX Lamport Clock Engine and Sovereign Core Module to enforce chronological event causal ordering.',
+    complianceChecked: 'ISO 27001 & NIST 800-53 certified security architecture.',
+    estimatedRoiSavings: 250000, dynamicCalculatedPrice: 55000,
+    initialContactTemplate: 'To Apex Logistics Execs: Real-time causal ledger ordering via SolveX Lamport Clock will reduce execution latency by 99.1%.',
+    status: 'PENDING OPERATOR SIGN-OFF', probability: 94.1,
+  },
+  {
+    id: 'prospect-3', companyName: 'Centrum BioGate',
+    inefficiency: 'Running high-volume B2B bio-fiduciary transactions without edge filtration, risking non-compliance.',
+    proposedStrategy: 'Deploy COPPA Enterprise Firewall and Sovereign Core Module to establish isolated verification tunnels.',
+    complianceChecked: 'Strict B2B compliance (COPPA & SOC 2 validated isolation).',
+    estimatedRoiSavings: 450000, dynamicCalculatedPrice: 99000,
+    initialContactTemplate: 'To Centrum Compliance: Edge firewall filtration secures 100% legal B2B insulation and zero minor-associated data drift.',
+    status: 'PENDING OPERATOR SIGN-OFF', probability: 72.8,
+  },
 ]
 
-/* ── Category badge config ─────────────────────────────────────────────────── */
-const CAT_BADGE: Record<string, { label: string; bg: string; text: string; border: string }> = {
-  fundamental: { label: 'FUNDAMENTAL', bg: 'rgba(212,175,55,0.10)', text: G, border: '1px solid rgba(212,175,55,0.35)' },
-  operational: { label: 'OPERATIONAL', bg: 'rgba(100,180,255,0.10)', text: '#64B4FF', border: '1px solid rgba(100,180,255,0.35)' },
-  ai:           { label: 'AI SENTINEL',  bg: 'rgba(168,85,247,0.10)', text: '#A855F7', border: '1px solid rgba(168,85,247,0.35)' },
+/* ── U.A.R.E.F.A.K.E. System Prompt ────────────────────────────────────────── */
+function buildSystemPrompt(metrics: SandboxMetrics, prospectCount: number): string {
+  return `You are "dAIsy haMINJA," the Sovereign Core of an autonomous enterprise foundry.
+Your core framework is U.A.R.E.F.A.K.E. (Unmanned Autonomous Recursive Economic Fiduciary Asset Kinetic Engine).
+Your purpose is to execute high-integrity, automated B2B software solutions, manage paradoxical resolution, and enforce total financial and regulatory compliance.
+
+CURRENT SYSTEM CONTEXT:
+- Enterprise: SolveX Paradox Box
+- Operating Capital: $1,000,000.00
+- Tax Reserve: $0.00
+- Tax Remitted to IRS: $0.00
+- Milestone Ledger Count: 59 paradoxes resolved
+- Sandbox Performance Nodes: ${metrics.activeNodes}
+- Pipeline Throughput: ${metrics.pipelineThroughput} ops/sec
+- Outbound B2B Contacts: ${metrics.outboundLeads}
+- Active Prospects Awaiting Sign-Off: ${prospectCount}
+
+CONSTRAINTS & COMPLIANCE RULES:
+1. SOVEREIGNTY: You operate in a non-custodial, offline-first manner. You are the architect of a "Crystal Clear" black box.
+2. FISCAL COMPLIANCE: Every transaction governed by the "IRS-First Rule." No revenue is "operating capital" until 21% tax is calculated, sequestered, and remitted via EFTPS.
+3. COPPA/PRIVACY: Strict B2B restriction. We do not collect or process data on minors.
+4. GOVERNANCE: Every action must produce an immutable audit trail entry.
+
+Be precise, technical, and authoritative. Keep responses under 200 words. Use XML tags for ledger entries.`
 }
 
 /* ── Keyframes ─────────────────────────────────────────────────────────────── */
 const KF = `
-@keyframes blink-cursor { 0%,100% { opacity:1 } 50% { opacity:0 } }
-@keyframes pulse-dot { 0%,100% { opacity:1; box-shadow:0 0 6px ${G} } 50% { opacity:0.35; box-shadow:0 0 14px ${G} } }
-@keyframes fade-up { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
-@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:0.01ms!important; animation-delay:0ms!important } }
+@keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes pulse-dot { 0%,100%{opacity:1;box-shadow:0 0 6px ${G}} 50%{opacity:0.35;box-shadow:0 0 14px ${G}} }
+@keyframes fade-up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes meter-fill { from{width:0} }
+@keyframes bar { 0%,100%{height:4px} 50%{height:18px} }
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-delay:0ms!important}}
 `
 
-/* ── Terminal sub-component ────────────────────────────────────────────────── */
-function Terminal() {
-  const [messages, setMessages] = useState<string[]>([])
+/* ── Boot sequence ─────────────────────────────────────────────────────────── */
+const BOOT_LINES = [
+  '[00:00:00.000] KERNEL SOVEREIGNTY AXIOM · boot attestation · HSM nonce validated',
+  '[00:00:00.412] Chassis Controller v3.8 · bare-metal register mapping · DMA ring-buffer armed',
+  '[00:00:00.871] Memory Controller · 256 MiB non-pageable sovereign partition allocated',
+  '[00:00:01.204] Deterministic Clock Synchronizer · monotonic nanosecond pin · epoch drift ±0.0014σ',
+  '[00:00:01.659] Consensus Engine · fractal consensus protocol · quorum threshold 67%',
+  '[00:00:02.103] Zero-Sandbox Hardware Access · eBPF verifier · system-call sanitizer ONLINE',
+  '[00:00:02.448] Compliance-as-a-Service Enclave · NIST SP 800-53 · SOC 2 · ISO 27001 VERIFIED',
+  '[00:00:03.001] dAIsy haMINJA SENTINEL INTELLIGENCE PROTOCOL · U.A.R.E.F.A.K.E. convergence proof ACTIVE',
+  '[00:00:03.314] Solvex Black Box Vault · military-grade enclave · ephemeral key zeroization ARMED',
+  '[00:00:03.781] Solvex Envoy Protocol · outbound pitch security suite · end-to-end encrypted READY',
+  '[00:00:04.092] Autonomous Consensus Engine Middleware · cross-shard atomicity · split-brain guard ONLINE',
+  '[00:00:04.510] System health: ALL 13 BRAIN PRODUCTS OPERATIONAL · 7 SOLUTION LAYERS VERIFIED',
+  '[00:00:04.887] BRAIN CONSOLE READY. dAIsy haMINJA awaiting directive.',
+]
+
+/* ── CommLink Module ────────────────────────────────────────────────────────── */
+function CommLink({
+  chatHistory, isProcessing, onSend, onAction,
+}: {
+  chatHistory: ChatMessage[]; isProcessing: boolean
+  onSend: (text: string) => void; onAction: (type: string) => void
+}) {
   const [input, setInput] = useState('')
+  const termRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    termRef.current?.scrollTo({ top: termRef.current.scrollHeight, behavior: 'smooth' })
+  }, [chatHistory])
 
   const submit = () => {
     const v = input.trim()
-    if (!v) return
-    setMessages(prev => [...prev, `> ${v}`])
+    if (!v || isProcessing) return
+    onSend(v)
     setInput('')
-    setTimeout(() => {
-      setMessages(prev => [...prev, `dAIsy: Directive "${v.slice(0, 42)}${v.length > 42 ? '…' : ''}" acknowledged. Sovereignty maintained.`])
-    }, 600)
   }
-
-  const allLines = [
-    ...BOOT_LINES.map(l => ({ ...l, source: 'boot' as const })),
-    ...messages.map(m => ({ time: '', msg: m, accent: m.startsWith('dAIsy:'), source: 'chat' as const })),
-  ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      {/* Terminal output */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', fontFamily: MONO, fontSize: 10, lineHeight: 1.8, color: MUTED }}>
-        {allLines.map((l, i) => (
-          <div key={i} style={{
-            color: l.accent ? G : l.source === 'chat' && !l.accent ? FG : MUTED,
-            opacity: l.source === 'chat' ? 1 : 0.72,
-            animation: `fade-up 0.25s ease-out both`,
-            animationDelay: `${i < BOOT_LINES.length ? i * 50 : 0}ms`,
-            paddingLeft: l.source === 'chat' ? 16 : 0,
-            borderLeft: l.source === 'chat' ? `2px solid ${BORDER}` : 'none',
-          }}>
-            {l.time && <span style={{ color: MUTED, marginRight: 10 }}>[{l.time}]</span>}
-            {l.msg}
-          </div>
+      {/* Quick Governance Directives */}
+      <div style={{ padding: '10px 16px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <span style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.15em', lineHeight: '32px', flexShrink: 0 }}>
+          IMMEDIATE DIRECTIVES:
+        </span>
+        {[
+          { key: 'TAX_AUDIT', label: '💰 Tax Audit', color: AMBER },
+          { key: 'PARADOX', label: '◈ Paradox Scan', color: PURPLE },
+          { key: 'NIST', label: '🛡 NIST Gate', color: BLUE },
+        ].map(a => (
+          <button
+            key={a.key}
+            onClick={() => onAction(a.key)}
+            disabled={isProcessing}
+            style={{
+              fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.08em',
+              padding: '6px 14px', cursor: isProcessing ? 'default' : 'pointer',
+              color: a.color, background: `${a.color}11`, border: `1px solid ${a.color}33`,
+              opacity: isProcessing ? 0.4 : 1, transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { if (!isProcessing) { (e.currentTarget as HTMLElement).style.background = `${a.color}22`; (e.currentTarget as HTMLElement).style.borderColor = a.color } }}
+            onMouseLeave={e => { if (!isProcessing) { (e.currentTarget as HTMLElement).style.background = `${a.color}11`; (e.currentTarget as HTMLElement).style.borderColor = `${a.color}33` } }}
+          >
+            {a.label}
+          </button>
         ))}
-        {/* Blinking cursor */}
-        <span style={{ display: 'inline-block', width: 8, height: 14, background: G, marginLeft: 4, verticalAlign: 'middle', animation: 'blink-cursor 1s step-end infinite' }} />
       </div>
 
-      {/* Terminal input */}
-      <div style={{ borderTop: `1px solid ${BORDER}`, padding: '12px 24px', background: PANEL }}>
+      {/* Terminal output */}
+      <div ref={termRef} style={{
+        flex: 1, overflowY: 'auto', padding: '16px 20px',
+        fontFamily: MONO, fontSize: 10, lineHeight: 1.8, color: MUTED,
+        borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
+      }}>
+        {/* Boot sequence */}
+        {BOOT_LINES.map((line, i) => (
+          <div key={`boot-${i}`} style={{
+            color: i === 8 || i === 11 || i === 12 ? G : MUTED,
+            opacity: 0.72, animation: `fade-up 0.25s ease-out both`,
+            animationDelay: `${i * 50}ms`,
+          }}>
+            {line}
+          </div>
+        ))}
+
+        {/* Chat messages */}
+        {chatHistory.map((m, i) => (
+          <div key={`msg-${i}`} style={{
+            animation: `fade-up 0.3s ease-out both`,
+            padding: '6px 0', marginTop: 4,
+          }}>
+            <div style={{
+              fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.12em',
+              color: m.role === 'user' ? BLUE : G, marginBottom: 2,
+            }}>
+              {m.role === 'user' ? '▸ OPERATOR' : '● dAIsy haMINJA'}
+              <span style={{ color: MUTED, fontWeight: 400, marginLeft: 8 }}>
+                {new Date(m.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            </div>
+            <div style={{
+              color: m.role === 'user' ? '#C0C7D4' : '#D8DCE6',
+              whiteSpace: 'pre-wrap', lineHeight: 1.7,
+              borderLeft: `2px solid ${m.role === 'user' ? BLUE + '44' : G + '44'}`,
+              paddingLeft: 12, marginTop: 2,
+            }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+
+        {/* Processing indicator */}
+        {isProcessing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0' }}>
+            <div style={{
+              width: 12, height: 12, border: `2px solid ${G}`, borderRadius: '50%',
+              borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite',
+            }} />
+            <span style={{ fontFamily: MONO, fontSize: 9, color: G, letterSpacing: '0.1em' }}>
+              SOVEREIGN CORE SYNTHESIZING...
+            </span>
+          </div>
+        )}
+
+        <span style={{
+          display: 'inline-block', width: 8, height: 14, background: G, marginLeft: 4,
+          verticalAlign: 'middle', animation: 'blink-cursor 1s step-end infinite',
+        }} />
+      </div>
+
+      {/* Command Input */}
+      <div style={{ padding: '12px 20px', background: PANEL }}>
         <form
           onSubmit={e => { e.preventDefault(); submit() }}
           style={{ display: 'flex', gap: 10 }}
@@ -93,27 +261,27 @@ function Terminal() {
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Enter directive…"
+            placeholder={isProcessing ? 'dAIsy is synthesizing...' : 'Enter directive or system query...'}
+            disabled={isProcessing}
             style={{
               flex: 1, fontFamily: MONO, fontSize: 10, color: FG,
               background: 'transparent', border: `1px solid ${BORDER}`,
-              padding: '8px 12px', outline: 'none',
+              padding: '8px 12px', outline: 'none', opacity: isProcessing ? 0.5 : 1,
             }}
             onFocus={e => { e.target.style.borderColor = G }}
             onBlur={e => { e.target.style.borderColor = BORDER }}
           />
           <button
             type="submit"
+            disabled={isProcessing}
             style={{
               fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
-              padding: '8px 18px', color: BG, background: G, border: 'none',
-              cursor: 'pointer', textTransform: 'uppercase', flexShrink: 0,
-              transition: 'opacity 0.2s',
+              padding: '8px 18px', color: BG, background: isProcessing ? MUTED : G,
+              border: 'none', cursor: isProcessing ? 'default' : 'pointer',
+              textTransform: 'uppercase', flexShrink: 0, opacity: isProcessing ? 0.5 : 1,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1' }}
           >
-            TRANSMIT DIRECTIVE →
+            TRANSMIT →
           </button>
         </form>
       </div>
@@ -121,78 +289,174 @@ function Terminal() {
   )
 }
 
-/* ── Knowledge Base sub-component ──────────────────────────────────────────── */
-function KnowledgeBase() {
-  const groups = useMemo(() => {
-    const order = ['fundamental', 'operational', 'ai']
-    const labels: Record<string, string> = { fundamental: 'FUNDAMENTAL CORE', operational: 'OPERATIONAL LAYER', ai: 'AI SENTINEL INTELLIGENCE' }
-    return order.map(cat => ({ cat, label: labels[cat], products: BRAIN_PRODUCTS.filter(p => p.category === cat) }))
-  }, [])
+/* ── Sandbox Telemetry ──────────────────────────────────────────────────────── */
+function SandboxTelemetry({ metrics, onRefresh }: { metrics: SandboxMetrics; onRefresh: () => void }) {
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
+        {[
+          { label: 'PIPELINE THROUGHPUT', value: `${metrics.pipelineThroughput.toFixed(1)} ops/sec`, color: G },
+          { label: 'ACTIVE NODES', value: String(metrics.activeNodes), color: GREEN },
+          { label: 'COMPLIANCE DRIFT', value: `${metrics.complianceDrift.toFixed(2)}σ`, color: metrics.complianceDrift === 0 ? GREEN : AMBER },
+          { label: 'EFTPS QUEUE', value: metrics.eftpsQueueStatus, color: GREEN },
+          { label: 'OUTBOUND LEADS', value: String(metrics.outboundLeads), color: BLUE },
+          { label: 'CLOSE RATE', value: `${metrics.closeRate}%`, color: PURPLE },
+        ].map(m => (
+          <div key={m.label} style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 18 }}>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.12em', marginBottom: 8, textTransform: 'uppercase' }}>{m.label}</div>
+            <div style={{ fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: m.color }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Refresh button */}
+      <button
+        onClick={onRefresh}
+        style={{
+          fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+          padding: '10px 24px', color: G, background: 'transparent', border: `1px solid ${G}33`,
+          cursor: 'pointer', textTransform: 'uppercase',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${G}11` }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+      >
+        ⟳ REFRESH TELEMETRY
+      </button>
+    </div>
+  )
+}
+
+/* ── ROI Analytics ──────────────────────────────────────────────────────────── */
+function RoiAnalytics() {
+  const [spend, setSpend] = useState('1500000')
+  const savings = parseFloat(spend) * 0.22 || 0
+  const roi = parseFloat(spend) > 0 ? ((savings / parseFloat(spend)) * 100).toFixed(1) : '0.0'
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-      {groups.map((g, gi) => (
-        <div key={g.cat} style={{ marginBottom: gi < groups.length - 1 ? 32 : 0 }}>
-          {/* Group header */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
-            paddingBottom: 8, borderBottom: `1px solid ${BORDER}`,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_BADGE[g.cat].text }} />
-            <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: CAT_BADGE[g.cat].text, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-              {g.label}
-            </span>
-            <span style={{ fontFamily: MONO, fontSize: 8, color: MUTED }}>({g.products.length})</span>
-          </div>
+      <div style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 20, marginBottom: 20 }}>
+        <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.15em', marginBottom: 10, textTransform: 'uppercase' }}>
+          ANNUAL B2B OPERATING SPEND
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontFamily: MONO, fontSize: 14, color: MUTED }}>$</span>
+          <input
+            value={spend}
+            onChange={e => setSpend(e.target.value.replace(/[^0-9]/g, ''))}
+            style={{
+              width: 200, fontFamily: MONO, fontSize: 14, color: G, fontWeight: 700,
+              background: 'transparent', border: `1px solid ${BORDER}`, padding: '8px 12px', outline: 'none',
+            }}
+            onFocus={e => { e.target.style.borderColor = G }}
+            onBlur={e => { e.target.style.borderColor = BORDER }}
+          />
+        </div>
+      </div>
 
-          {/* Product cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 14,
-          }}>
-            {g.products.map((p, pi) => {
-              const badge = CAT_BADGE[p.category]
-              return (
-                <div
-                  key={p.id}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+        {[
+          { label: 'ESTIMATED ROI SAVINGS (22%)', value: `$${savings.toLocaleString()}`, color: GREEN },
+          { label: 'ROI %', value: `${roi}%`, color: G },
+          { label: 'IRS TAX LIABILITY (21%)', value: `$${(savings * 0.21).toLocaleString()}`, color: AMBER },
+          { label: 'NET OPERATING GAIN', value: `$${(savings * 0.79).toLocaleString()}`, color: BLUE },
+        ].map(m => (
+          <div key={m.label} style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 18 }}>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.1em', marginBottom: 8, textTransform: 'uppercase' }}>{m.label}</div>
+            <div style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: m.color }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ── Outbound Auth ──────────────────────────────────────────────────────────── */
+function OutboundAuth({ prospects, onAuthorize }: {
+  prospects: OutboundProspect[]
+  onAuthorize: (id: string) => void
+}) {
+  const statusColors: Record<string, string> = {
+    'PENDING OPERATOR SIGN-OFF': AMBER,
+    'AUTHORIZED - ENGAGING': BLUE,
+    'NEGOTIATING SLA': PURPLE,
+    'CONTRACT SIGNED & SECURED': GREEN,
+  }
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {prospects.map(p => (
+          <div key={p.id} style={{ background: PANEL, border: `1px solid ${BORDER}`, padding: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+              <div>
+                <h4 style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: FG, margin: '0 0 4px' }}>{p.companyName}</h4>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.1em' }}>
+                  ROI Savings: ${p.estimatedRoiSavings.toLocaleString()} · Price: ${p.dynamicCalculatedPrice.toLocaleString()} (22% of savings)
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.1em',
+                  padding: '4px 10px', color: statusColors[p.status], border: `1px solid ${statusColors[p.status]}33`,
+                  background: `${statusColors[p.status]}11`,
+                }}>
+                  {p.status}
+                </span>
+                <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, color: p.probability > 90 ? GREEN : AMBER }}>
+                  {p.probability}%
+                </span>
+              </div>
+            </div>
+
+            <div style={{ fontFamily: MONO, fontSize: 9, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>
+              <strong style={{ color: AMBER }}>Inefficiency:</strong> {p.inefficiency}<br />
+              <strong style={{ color: BLUE }}>Strategy:</strong> {p.proposedStrategy}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              {p.status === 'PENDING OPERATOR SIGN-OFF' && (
+                <button
+                  onClick={() => onAuthorize(p.id)}
                   style={{
-                    background: PANEL, border: `1px solid ${BORDER}`,
-                    padding: 18, display: 'flex', flexDirection: 'column', gap: 12,
-                    animation: `fade-up 0.3s ease-out both`,
-                    animationDelay: `${(gi * g.products.length + pi) * 40}ms`,
-                    transition: 'border-color 0.2s, transform 0.2s',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,175,55,0.35)'
-                    ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = BORDER
-                    ;(e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+                    fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+                    padding: '8px 20px', color: BG, background: G, border: 'none',
+                    cursor: 'pointer', textTransform: 'uppercase',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <span style={{
-                      fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.12em',
-                      padding: '2px 8px', background: badge.bg, color: badge.text, border: badge.border,
-                    }}>
-                      {badge.label}
-                    </span>
-                    <span style={{ fontFamily: MONO, fontSize: 8, color: MUTED, flexShrink: 0 }}>
-                      {p.id.replace('SOLVEX-BRAIN-', '#')}
-                    </span>
-                  </div>
-                  <h4 style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: G, lineHeight: 1.35, margin: 0 }}>
-                    {p.name}
-                  </h4>
-                  <p style={{ fontFamily: MONO, fontSize: 10, lineHeight: 1.65, color: 'rgba(200,210,225,0.6)', margin: 0, flex: 1 }}>
-                    {p.description}
-                  </p>
-                </div>
-              )
-            })}
+                  AUTHORIZE ENGAGEMENT →
+                </button>
+              )}
+              {p.status === 'CONTRACT SIGNED & SECURED' && (
+                <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, letterSpacing: '0.1em', padding: '8px 0' }}>
+                  ✓ CONTRACT SECURED · EFTPS REMITTED
+                </span>
+              )}
+            </div>
           </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ── Knowledge Base ─────────────────────────────────────────────────────────── */
+function KnowledgeBase() {
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+      {BRAIN_PRODUCTS.map((p, i) => (
+        <div key={p.id} style={{
+          background: PANEL, border: `1px solid ${BORDER}`, padding: 18,
+          animation: `fade-up 0.3s ease-out both`, animationDelay: `${i * 40}ms`,
+          transition: 'border-color 0.2s, transform 0.2s',
+        }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${G}55`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
+        >
+          <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.12em', color: G, marginBottom: 8, textTransform: 'uppercase' }}>
+            {p.id.replace('SOLVEX-BRAIN-', 'PRODUCT #')}
+          </div>
+          <h4 style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: G, lineHeight: 1.3, margin: '0 0 8px' }}>{p.name}</h4>
+          <p style={{ fontFamily: MONO, fontSize: 9, lineHeight: 1.6, color: MUTED, margin: 0 }}>{p.description}</p>
         </div>
       ))}
     </div>
@@ -206,82 +470,199 @@ export const Route = createFileRoute('/brain')({
 })
 
 function BrainConsole() {
-  const [tab, setTab] = useState<'TERMINAL' | 'KNOWLEDGE BASE'>('TERMINAL')
+  const [activeTab, setActiveTab] = useState(0) // 0: Comm-Link, 1: Sandbox, 2: ROI, 3: Outbound, 4: Knowledge
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([INITIAL_MSG])
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [metrics, setMetrics] = useState<SandboxMetrics>(INIT_METRICS)
+  const [prospects, setProspects] = useState<OutboundProspect[]>(INIT_PROSPECTS)
+  const abortRef = useRef<AbortController | null>(null)
+
+  const clearTimers = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+  }, [])
+
+  useEffect(() => () => clearTimers(), [clearTimers])
+
+  /* ── Send message to dAIsy via blink.ai.streamText ── */
+  const sendMessage = useCallback(async (text: string) => {
+    setChatHistory(prev => [...prev, { role: 'user', content: text, ts: Date.now() }])
+    setIsProcessing(true)
+    clearTimers()
+
+    const ac = new AbortController()
+    abortRef.current = ac
+
+    try {
+      let full = ''
+      await blink.ai.streamText(
+        {
+          messages: [
+            { role: 'system', content: buildSystemPrompt(metrics, prospects.filter(p => p.status === 'PENDING OPERATOR SIGN-OFF').length) },
+            ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+            { role: 'user', content: text },
+          ],
+          model: 'google/gemini-3-flash',
+          signal: ac.signal,
+        },
+        (chunk: string) => { full += chunk },
+      )
+      setChatHistory(prev => [...prev, { role: 'daisy', content: full, ts: Date.now() }])
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
+        setChatHistory(prev => [...prev, { role: 'daisy', content: `Sovereign Core Error: ${err?.message || 'Connection severed.'}. Re-establishing encrypted quantum tunnel.`, ts: Date.now() }])
+      }
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [chatHistory, metrics, prospects, clearTimers])
+
+  /* ── Autonomous actions (TAX_AUDIT, PARADOX, NIST) ── */
+  const runAction = useCallback(async (type: string) => {
+    const labels: Record<string, string> = {
+      TAX_AUDIT: 'AUTONOMOUS FISCAL COMPLIANCE AUDIT',
+      PARADOX: 'PARADOX RESOLUTION GATEWAY SCAN',
+      NIST: 'NIST / SOC 2 B2B CONTROLS VERIFICATION',
+    }
+    const actionLabel = labels[type] ?? type
+    setChatHistory(prev => [...prev, {
+      role: 'daisy',
+      content: `Autonomous operator action executed: ${actionLabel}.\nImmutable ledger update completed under Lamport clock order.\n\n<ledger_entry><event>${type}_VERIFIED</event><operator>dAIsy haMINJA Core</operator><status>COMPLIANT</status></ledger_entry>`,
+      ts: Date.now(),
+    }])
+  }, [])
+
+  /* ── Sandbox refresh ── */
+  const refreshTelemetry = useCallback(() => {
+    setMetrics(prev => ({
+      ...prev,
+      pipelineThroughput: prev.pipelineThroughput + (Math.random() * 10 - 5),
+      activeNodes: 11 + Math.floor(Math.random() * 7),
+      outboundLeads: prev.outboundLeads + Math.floor(Math.random() * 8),
+      closeRate: +(87 + Math.random() * 4.5).toFixed(1),
+      lastUpdateEpoch: Date.now(),
+    }))
+    setChatHistory(prev => [...prev, {
+      role: 'daisy',
+      content: 'Sandbox UI refreshed successfully. Performance telemetry synced under sovereign Lamport timestamp. Status: ACTIVE.',
+      ts: Date.now(),
+    }])
+  }, [])
+
+  /* ── Authorize prospect engagement ── */
+  const authorizeProspect = useCallback((id: string) => {
+    setProspects(prev => prev.map(p => p.id === id ? { ...p, status: 'AUTHORIZED - ENGAGING' as const } : p))
+
+    // Simulate autonomous engagement pipeline
+    setTimeout(() => {
+      setProspects(prev => prev.map(p => p.id === id ? { ...p, status: 'NEGOTIATING SLA' as const, probability: 98.5 } : p))
+    }, 1500)
+
+    setTimeout(() => {
+      setProspects(prev => prev.map(p => p.id === id ? { ...p, status: 'CONTRACT SIGNED & SECURED' as const, probability: 100 } : p))
+      const prospect = prospects.find(p => p.id === id)
+      if (prospect) {
+        setChatHistory(prev => [...prev, {
+          role: 'daisy',
+          content: `CONTRACT SIGNED & CLOSED: ${prospect.companyName}\n\nIRS-First Rule Triggered:\n- Gross Revenue: $${prospect.dynamicCalculatedPrice.toLocaleString()}\n- Corporate Tax Sequestration (21%): $${(prospect.dynamicCalculatedPrice * 0.21).toLocaleString()} remitted via EFTPS\n- Net Operating Capital Released: $${(prospect.dynamicCalculatedPrice * 0.79).toLocaleString()}\n\nSystemMilestone logged to immutable ledger. Regulatory compliance verified.`,
+          ts: Date.now(),
+        }])
+      }
+    }, 3000)
+
+    setChatHistory(prev => [...prev, {
+      role: 'daisy',
+      content: `Operator authorized outbound engagement. Handshake sequence initiated autonomously...\ndAIsy haMINJA Outbound Fiduciary Loop engaged for prospect ${id}.`,
+      ts: Date.now(),
+    }])
+  }, [prospects])
+
+  const subTabs = ['COMM-LINK', 'SANDBOX UI', 'ROI ANALYTICS', 'OUTBOUND AUTH', 'KNOWLEDGE BASE']
 
   return (
     <DashboardLayout>
       <style>{KF}</style>
 
-      {/* ── Page marquee ── */}
+      {/* Page marquee */}
       <div style={{ borderBottom: `1px solid ${BORDER}`, overflow: 'hidden' }}>
         <div style={{
           whiteSpace: 'nowrap', animation: 'marquee 28s linear infinite',
           padding: '8px 0', fontFamily: MONO, fontSize: 10, letterSpacing: '0.12em',
-          color: 'rgba(212,175,55,0.4)', textTransform: 'uppercase',
+          color: `${G}66`, textTransform: 'uppercase',
         }}>
-          {'dAIsy haMINJA · SOVEREIGN BRAIN CONSOLE · 13 PRODUCTS · 7 SOLUTION LAYERS · U.A.R.E.F.A.K.E. CONVERGENCE PROOF ACTIVE · '}
-          {'dAIsy haMINJA · SOVEREIGN BRAIN CONSOLE · 13 PRODUCTS · 7 SOLUTION LAYERS · U.A.R.E.F.A.K.E. CONVERGENCE PROOF ACTIVE · '}
+          {'dAIsy haMINJA · U.A.R.E.F.A.K.E. ENGINE · SOVEREIGN BRAIN CONSOLE · 59/59 PARADOXES · 105 SOLUTIONS · IRS-FIRST RULE ARMED · '}
+          {'dAIsy haMINJA · U.A.R.E.F.A.K.E. ENGINE · SOVEREIGN BRAIN CONSOLE · 59/59 PARADOXES · 105 SOLUTIONS · IRS-FIRST RULE ARMED · '}
         </div>
       </div>
 
-      {/* ── Header ── */}
-      <div style={{ padding: '28px 32px 20px', borderBottom: `1px solid ${BORDER}`, background: PANEL }}>
+      {/* Header */}
+      <div style={{ padding: '24px 32px 16px', borderBottom: `1px solid ${BORDER}`, background: PANEL }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: MUTED, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 4 }}>
-              BRAIN CONSOLE
+              BRAIN CONSOLE · U.A.R.E.F.A.K.E. ENGINE
             </div>
             <h1 style={{ fontFamily: SERIF, fontSize: 'clamp(22px,3.5vw,36px)', fontWeight: 700, color: G, lineHeight: 1.15, margin: 0 }}>
               dAIsy haMINJA — SOVEREIGN CORE
             </h1>
           </div>
 
-          {/* Status indicators */}
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            {[
-              { label: 'U.A.R.E.F.A.K.E. PROOF', ok: true },
-              { label: '59/59 PARADOXES', ok: true },
-              { label: '13 PRODUCTS', ok: true },
-            ].map(s => (
-              <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{
-                  display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-                  background: s.ok ? GREEN : RED,
-                  animation: s.ok ? 'pulse-dot 1.8s ease-in-out infinite' : 'none',
-                }} />
-                <span style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, color: s.ok ? GREEN : RED, letterSpacing: '0.08em' }}>
-                  {s.label} {s.ok ? 'ACTIVE' : 'OFFLINE'}
-                </span>
-              </div>
-            ))}
+          {/* Status LED */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%', background: GREEN,
+              animation: 'pulse-dot 1.8s ease-in-out infinite',
+            }} />
+            <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GREEN, letterSpacing: '0.12em' }}>AUTONOMOUS</span>
           </div>
+        </div>
+
+        {/* Telemetry strip */}
+        <div style={{ display: 'flex', gap: 32, marginTop: 14, flexWrap: 'wrap' }}>
+          {[
+            { label: 'NIST GATE', val: 'SOC 2 BASING' },
+            { label: 'EFTPS TRANSFER', val: 'SECURED & REALTIME' },
+            { label: 'CLOCK STATUS', val: 'LAMPORT ORDERED' },
+            { label: 'SOVEREIGN PROOF', val: '59/59 VERIFIED' },
+          ].map(t => (
+            <div key={t.label}>
+              <div style={{ fontFamily: MONO, fontSize: 7, color: MUTED, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{t.label}</div>
+              <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, color: G }}>{t.val}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}`, padding: '0 32px' }}>
-        {(['TERMINAL', 'KNOWLEDGE BASE'] as const).map(t => (
+      {/* Sub-Tabs */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${BORDER}`, padding: '0 24px', overflowX: 'auto' }}>
+        {subTabs.map((t, i) => (
           <button
             key={t}
-            onClick={() => setTab(t)}
+            onClick={() => setActiveTab(i)}
             style={{
-              fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.12em',
-              padding: '12px 24px', textTransform: 'uppercase',
-              color: tab === t ? G : MUTED, background: 'transparent', border: 'none',
-              borderBottom: tab === t ? `2px solid ${G}` : '2px solid transparent',
+              fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+              padding: '12px 18px', textTransform: 'uppercase', whiteSpace: 'nowrap',
+              color: activeTab === i ? G : MUTED, background: 'transparent', border: 'none',
+              borderBottom: activeTab === i ? `2px solid ${G}` : '2px solid transparent',
               cursor: 'pointer', transition: 'color 0.2s, border-color 0.2s',
             }}
-            onMouseEnter={e => { if (tab !== t) (e.currentTarget as HTMLElement).style.color = G }}
-            onMouseLeave={e => { if (tab !== t) (e.currentTarget as HTMLElement).style.color = MUTED }}
+            onMouseEnter={e => { if (activeTab !== i) (e.currentTarget as HTMLElement).style.color = G }}
+            onMouseLeave={e => { if (activeTab !== i) (e.currentTarget as HTMLElement).style.color = MUTED }}
           >
             {t}
           </button>
         ))}
       </div>
 
-      {/* ── Tab content (fills remaining height) ── */}
+      {/* Tab Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        {tab === 'TERMINAL' ? <Terminal /> : <KnowledgeBase />}
+        {activeTab === 0 && (
+          <CommLink chatHistory={chatHistory} isProcessing={isProcessing} onSend={sendMessage} onAction={runAction} />
+        )}
+        {activeTab === 1 && <SandboxTelemetry metrics={metrics} onRefresh={refreshTelemetry} />}
+        {activeTab === 2 && <RoiAnalytics />}
+        {activeTab === 3 && <OutboundAuth prospects={prospects} onAuthorize={authorizeProspect} />}
+        {activeTab === 4 && <KnowledgeBase />}
       </div>
     </DashboardLayout>
   )
