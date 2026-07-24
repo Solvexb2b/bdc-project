@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { blink } from '@/blink/client'
+import { queryRAG, initRAG } from '@/lib/rag'
 
 /* ── Design tokens ─────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
@@ -57,13 +58,14 @@ export function DaisyFloat() {
   const abortRef = useRef<AbortController | null>(null)
   const styleRef = useRef(false)
 
-  /* Inject keyframes once */
+  /* Inject keyframes once + init RAG */
   useEffect(() => {
     if (styleRef.current) return
     styleRef.current = true
     const el = document.createElement('style')
     el.textContent = KF
     document.head.appendChild(el)
+    initRAG() // seed RAG collection in background
     return () => { el.remove(); styleRef.current = false }
   }, [])
 
@@ -98,19 +100,30 @@ export function DaisyFloat() {
     abortRef.current = ac
 
     try {
+      // Try RAG first for grounded answers
       let full = ''
-      await blink.ai.streamText(
-        {
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            ...messages.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
-            { role: 'user', content: msg },
-          ],
-          model: 'google/gemini-3-flash',
-          signal: ac.signal,
-        },
-        (chunk: string) => { full += chunk },
-      )
+      const ragResult = await queryRAG(msg)
+
+      if (ragResult) {
+        full = ragResult.answer
+        if (ragResult.sources.length > 0) {
+          full += `\n\n── SOURCES ──\n${ragResult.sources.slice(0, 3).map(s => `· ${s.filename} (${(s.score * 100).toFixed(0)}%)`).join('\n')}`
+        }
+      } else {
+        // Fallback to raw AI stream
+        await blink.ai.streamText(
+          {
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              ...messages.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+              { role: 'user', content: msg },
+            ],
+            model: 'google/gemini-3-flash',
+            signal: ac.signal,
+          },
+          (chunk: string) => { full += chunk },
+        )
+      }
       setMessages(prev => [...prev, { role: 'daisy', content: full, ts: Date.now() }])
     } catch (err: any) {
       if (err?.name !== 'AbortError') {

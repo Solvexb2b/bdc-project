@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/DashboardLayout'
 import { BRAIN_PRODUCTS, PARADOXES } from '@/data/brainData'
 import { blink } from '@/blink/client'
+import { queryRAG, initRAG } from '@/lib/rag'
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
@@ -482,9 +483,12 @@ function BrainConsole() {
     abortRef.current = null
   }, [])
 
-  useEffect(() => () => clearTimers(), [clearTimers])
+  useEffect(() => {
+    initRAG() // seed RAG in background
+    return () => clearTimers()
+  }, [clearTimers])
 
-  /* ── Send message to dAIsy via blink.ai.streamText ── */
+  /* ── Send message to dAIsy via RAG-first, then blink.ai.streamText ── */
   const sendMessage = useCallback(async (text: string) => {
     setChatHistory(prev => [...prev, { role: 'user', content: text, ts: Date.now() }])
     setIsProcessing(true)
@@ -495,18 +499,29 @@ function BrainConsole() {
 
     try {
       let full = ''
-      await blink.ai.streamText(
-        {
-          messages: [
-            { role: 'system', content: buildSystemPrompt(metrics, prospects.filter(p => p.status === 'PENDING OPERATOR SIGN-OFF').length) },
-            ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
-            { role: 'user', content: text },
-          ],
-          model: 'google/gemini-3-flash',
-          signal: ac.signal,
-        },
-        (chunk: string) => { full += chunk },
-      )
+      // Try RAG first for grounded answers
+      const ragResult = await queryRAG(text)
+
+      if (ragResult) {
+        full = ragResult.answer
+        if (ragResult.sources.length > 0) {
+          full += `\n\n── SOURCES ──\n${ragResult.sources.slice(0, 3).map(s => `· ${s.filename} (${(s.score * 100).toFixed(0)}%)`).join('\n')}`
+        }
+      } else {
+        // Fallback to raw AI stream
+        await blink.ai.streamText(
+          {
+            messages: [
+              { role: 'system', content: buildSystemPrompt(metrics, prospects.filter(p => p.status === 'PENDING OPERATOR SIGN-OFF').length) },
+              ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+              { role: 'user', content: text },
+            ],
+            model: 'google/gemini-3-flash',
+            signal: ac.signal,
+          },
+          (chunk: string) => { full += chunk },
+        )
+      }
       setChatHistory(prev => [...prev, { role: 'daisy', content: full, ts: Date.now() }])
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
