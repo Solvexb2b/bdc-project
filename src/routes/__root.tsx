@@ -9,6 +9,8 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
 import type { ReactNode } from 'react'
 import indexCss from '../index.css?url'
+import { DaisyFloat } from '@/components/DaisyFloat'
+import { BlinkClientBoundary } from '@/components/BlinkClientBoundary'
 
 /**
  * Pre-paint theme script. Runs synchronously in <head> BEFORE first paint, so
@@ -109,6 +111,9 @@ function RootDocument({ children }: { children: ReactNode }) {
               stay full-bleed (delete `src/routes/app.tsx` + `src/routes/app/`).
             */}
             {children}
+            <BlinkClientBoundary>
+              <DaisyFloat />
+            </BlinkClientBoundary>
           </TooltipProvider>
         </QueryClientProvider>
         <Scripts />
