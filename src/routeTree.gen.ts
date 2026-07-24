@@ -9,15 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SovereignRouteImport } from './routes/sovereign'
+import { Route as OwnerRouteImport } from './routes/owner'
+import { Route as OutreachRouteImport } from './routes/outreach'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as ChallengesRouteImport } from './routes/challenges'
+import { Route as BrainRouteImport } from './routes/brain'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 
+const SovereignRoute = SovereignRouteImport.update({
+  id: '/sovereign',
+  path: '/sovereign',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OwnerRoute = OwnerRouteImport.update({
+  id: '/owner',
+  path: '/owner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OutreachRoute = OutreachRouteImport.update({
+  id: '/outreach',
+  path: '/outreach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChallengesRoute = ChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrainRoute = BrainRouteImport.update({
+  id: '/brain',
+  path: '/brain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -25,15 +62,20 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
 } as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
@@ -43,47 +85,156 @@ const ProductIdRoute = ProductIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
+  '/$': typeof SplatRoute
+  '/analytics': typeof AnalyticsRoute
+  '/app': typeof AppRoute
+  '/brain': typeof BrainRoute
+  '/challenges': typeof ChallengesRoute
+  '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
+  '/outreach': typeof OutreachRoute
+  '/owner': typeof OwnerRoute
+  '/sovereign': typeof SovereignRoute
   '/product/$id': typeof ProductIdRoute
-  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/analytics': typeof AnalyticsRoute
+  '/app': typeof AppRoute
+  '/brain': typeof BrainRoute
+  '/challenges': typeof ChallengesRoute
+  '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
+  '/outreach': typeof OutreachRoute
+  '/owner': typeof OwnerRoute
+  '/sovereign': typeof SovereignRoute
   '/product/$id': typeof ProductIdRoute
-  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
+  '/$': typeof SplatRoute
+  '/analytics': typeof AnalyticsRoute
+  '/app': typeof AppRoute
+  '/brain': typeof BrainRoute
+  '/challenges': typeof ChallengesRoute
+  '/library': typeof LibraryRoute
   '/marketplace': typeof MarketplaceRoute
+  '/outreach': typeof OutreachRoute
+  '/owner': typeof OwnerRoute
+  '/sovereign': typeof SovereignRoute
   '/product/$id': typeof ProductIdRoute
-  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/marketplace' | '/product/$id' | '/app/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/analytics'
+    | '/app'
+    | '/brain'
+    | '/challenges'
+    | '/library'
+    | '/marketplace'
+    | '/outreach'
+    | '/owner'
+    | '/sovereign'
+    | '/product/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/marketplace' | '/product/$id' | '/app'
-  id: '__root__' | '/' | '/app' | '/marketplace' | '/product/$id' | '/app/'
+  to:
+    | '/'
+    | '/$'
+    | '/analytics'
+    | '/app'
+    | '/brain'
+    | '/challenges'
+    | '/library'
+    | '/marketplace'
+    | '/outreach'
+    | '/owner'
+    | '/sovereign'
+    | '/product/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/analytics'
+    | '/app'
+    | '/brain'
+    | '/challenges'
+    | '/library'
+    | '/marketplace'
+    | '/outreach'
+    | '/owner'
+    | '/sovereign'
+    | '/product/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
+  SplatRoute: typeof SplatRoute
+  AnalyticsRoute: typeof AnalyticsRoute
+  AppRoute: typeof AppRoute
+  BrainRoute: typeof BrainRoute
+  ChallengesRoute: typeof ChallengesRoute
+  LibraryRoute: typeof LibraryRoute
   MarketplaceRoute: typeof MarketplaceRoute
+  OutreachRoute: typeof OutreachRoute
+  OwnerRoute: typeof OwnerRoute
+  SovereignRoute: typeof SovereignRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sovereign': {
+      id: '/sovereign'
+      path: '/sovereign'
+      fullPath: '/sovereign'
+      preLoaderRoute: typeof SovereignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/owner': {
+      id: '/owner'
+      path: '/owner'
+      fullPath: '/owner'
+      preLoaderRoute: typeof OwnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/outreach': {
+      id: '/outreach'
+      path: '/outreach'
+      fullPath: '/outreach'
+      preLoaderRoute: typeof OutreachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace': {
       id: '/marketplace'
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/challenges': {
+      id: '/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof ChallengesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brain': {
+      id: '/brain'
+      path: '/brain'
+      fullPath: '/brain'
+      preLoaderRoute: typeof BrainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -93,19 +244,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
     }
     '/product/$id': {
       id: '/product/$id'
@@ -117,20 +275,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppIndexRoute: AppIndexRoute,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
+  SplatRoute: SplatRoute,
+  AnalyticsRoute: AnalyticsRoute,
+  AppRoute: AppRoute,
+  BrainRoute: BrainRoute,
+  ChallengesRoute: ChallengesRoute,
+  LibraryRoute: LibraryRoute,
   MarketplaceRoute: MarketplaceRoute,
+  OutreachRoute: OutreachRoute,
+  OwnerRoute: OwnerRoute,
+  SovereignRoute: SovereignRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport
