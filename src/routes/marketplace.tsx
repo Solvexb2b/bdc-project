@@ -203,9 +203,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
       </div>
 
       {/* CTA */}
-      <Link
-        to="/product/$id"
-        params={{ id: product.id }}
+      <a
+        href={`/product/${product.id}`}
         style={{
           fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.15em',
           color: GOLD, textDecoration: 'none', display: 'inline-flex', alignItems: 'center',
@@ -215,7 +214,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.gap = '6px' }}
       >
         VIEW LOT DETAILS →
-      </Link>
+      </a>
     </div>
   )
 }

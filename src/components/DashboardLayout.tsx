@@ -245,17 +245,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               Sovereignty
             </div>
             {MAIN_NAV.map(item => <NavLink key={item.to} {...item} />)}
-
-            {/* Admin section — hidden by default (no auth wired yet) */}
-            {false && (
-              <>
-                <div style={{ height: 1, background: BORDER, margin: '8px 14px' }} />
-                <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, color: MUTED, letterSpacing: '0.15em', textTransform: 'uppercase', padding: '2px 14px 2px' }}>
-                  Administration
-                </div>
-                {ADMIN_NAV.map(item => <NavLink key={item.to} {...item} />)}
-              </>
-            )}
           </nav>
 
           {/* Footer badges */}

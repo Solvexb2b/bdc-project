@@ -126,6 +126,25 @@ function ProductDetail() {
           </div>
         </div>
 
+        {/* Payment */}
+        <div style={{
+          border: `1px solid #0070BA`, background: 'rgba(0,112,186,0.06)', padding: 24, marginBottom: 32,
+          display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between',
+        }}>
+          <div>
+            <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.2em', marginBottom: 6 }}>SECURE PAYMENT</div>
+            <div style={{ fontFamily: SERIF, fontSize: 22, color: '#0070BA', fontWeight: 700 }}>PayPal</div>
+          </div>
+          <a href="https://paypal.me/tjites" target="_blank" rel="noopener noreferrer" style={{
+            display: 'inline-block', padding: '14px 36px',
+            background: '#0070BA', color: '#FFFFFF',
+            fontFamily: MONO, fontSize: 11, fontWeight: 900, letterSpacing: '0.15em',
+            textDecoration: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            PAY WITH PAYPAL →
+          </a>
+        </div>
+
         {/* Compliance */}
         <div style={{ marginBottom: 32 }}>
           <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, letterSpacing: '0.2em', marginBottom: 10 }}>COMPLIANCE CERTIFICATIONS</div>
