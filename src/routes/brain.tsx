@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/DashboardLayout'
 import { BRAIN_PRODUCTS, PARADOXES } from '@/data/brainData'
 import { blink } from '@/blink/client'
 import { queryRAG, initRAG } from '@/lib/rag'
+import { provisionCustomModule, getProvisioningLedger, type CompiledModule } from '@/lib/daisyProvisioner'
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
@@ -573,13 +574,36 @@ function BrainConsole() {
       setProspects(prev => prev.map(p => p.id === id ? { ...p, status: 'NEGOTIATING SLA' as const, probability: 98.5 } : p))
     }, 1500)
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setProspects(prev => prev.map(p => p.id === id ? { ...p, status: 'CONTRACT SIGNED & SECURED' as const, probability: 100 } : p))
       const prospect = prospects.find(p => p.id === id)
       if (prospect) {
+        // dAIsy haMINJA — Sovereign Proprietary Custom Software Provisioning
+        let provisioningLog = ''
+        try {
+          const compiled = await provisionCustomModule(
+            {
+              id: prospect.id,
+              tier: 'ENTERPRISE',
+              requirements: [
+                prospect.proposedStrategy,
+                `COMPLIANCE: ${prospect.complianceChecked}`,
+                `ROI_TARGET: $${prospect.estimatedRoiSavings.toLocaleString()}`,
+              ],
+              companyName: prospect.companyName,
+              contactEmail: 'procurement@' + prospect.companyName.toLowerCase().replace(/\s+/g, '') + '.com',
+            },
+            (phase, pct) => {
+              console.log(`[Provisioner] ${phase} (${pct}%)`)
+            },
+          )
+          provisioningLog = `\n\n── dAIsy PROVISIONING MODULE ──\nBlueprint: ${compiled.blueprintId}\nHash: ${compiled.deploymentHash}\nStatus: ${compiled.status.toUpperCase()}\nAutonomous outreach: ${compiled.outreachDispatched ? '✓ DISPATCHED' : '✗ PENDING'}\n\nAll ${compiled.specifications.length} specifications compiled and cryptographically sealed.`
+        } catch (err: any) {
+          provisioningLog = `\n\n── PROVISIONING FAULT ──\n${err.message}\nManual operator intervention required.`
+        }
         setChatHistory(prev => [...prev, {
           role: 'daisy',
-          content: `CONTRACT SIGNED & CLOSED: ${prospect.companyName}\n\nIRS-First Rule Triggered:\n- Gross Revenue: $${prospect.dynamicCalculatedPrice.toLocaleString()}\n- Corporate Tax Sequestration (21%): $${(prospect.dynamicCalculatedPrice * 0.21).toLocaleString()} remitted via EFTPS\n- Net Operating Capital Released: $${(prospect.dynamicCalculatedPrice * 0.79).toLocaleString()}\n\nSystemMilestone logged to immutable ledger. Regulatory compliance verified.`,
+          content: `CONTRACT SIGNED & CLOSED: ${prospect.companyName}\n\nIRS-First Rule Triggered:\n- Gross Revenue: $${prospect.dynamicCalculatedPrice.toLocaleString()}\n- Corporate Tax Sequestration (21%): $${(prospect.dynamicCalculatedPrice * 0.21).toLocaleString()} remitted via EFTPS\n- Net Operating Capital Released: $${(prospect.dynamicCalculatedPrice * 0.79).toLocaleString()}${provisioningLog}`,
           ts: Date.now(),
         }])
       }
