@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { blink } from '@/blink/client'
 import { queryRAG, initRAG } from '@/lib/rag'
+import { integrations } from '@/lib/integrations'
 
 /* ── Design tokens ─────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
@@ -110,19 +111,38 @@ export function DaisyFloat() {
           full += `\n\n── SOURCES ──\n${ragResult.sources.slice(0, 3).map(s => `· ${s.filename} (${(s.score * 100).toFixed(0)}%)`).join('\n')}`
         }
       } else {
-        // Fallback to raw AI stream
-        await blink.ai.streamText(
-          {
-            messages: [
+        // Groq fallback: try fast inference first
+        let groqUsed = false
+        try {
+          await integrations.groqStreamText(
+            [
               { role: 'system', content: SYSTEM_PROMPT },
-              ...messages.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+              ...messages.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' : 'user', content: m.content })),
               { role: 'user', content: msg },
             ],
-            model: 'google/gemini-3-flash',
-            signal: ac.signal,
-          },
-          (chunk: string) => { full += chunk },
-        )
+            (chunk: string) => { full += chunk },
+            ac.signal,
+          )
+          groqUsed = true
+        } catch {
+          // Groq unavailable — fall through to blink.ai.streamText
+        }
+
+        if (!groqUsed) {
+          // Fallback to raw AI stream
+          await blink.ai.streamText(
+            {
+              messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                ...messages.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+                { role: 'user', content: msg },
+              ],
+              model: 'google/gemini-3-flash',
+              signal: ac.signal,
+            },
+            (chunk: string) => { full += chunk },
+          )
+        }
       }
       setMessages(prev => [...prev, { role: 'daisy', content: full, ts: Date.now() }])
     } catch (err: any) {

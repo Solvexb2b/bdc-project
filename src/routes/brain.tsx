@@ -5,6 +5,7 @@ import { BRAIN_PRODUCTS, PARADOXES } from '@/data/brainData'
 import { blink } from '@/blink/client'
 import { queryRAG, initRAG } from '@/lib/rag'
 import { provisionCustomModule, getProvisioningLedger, type CompiledModule } from '@/lib/daisyProvisioner'
+import { integrations } from '@/lib/integrations'
 
 /* ── Design tokens ─────────────────────────────────────────────────────────── */
 const G = '#D4AF37'; const BG = '#05080F'; const PANEL = '#0A0F1A'
@@ -489,6 +490,18 @@ function BrainConsole() {
     return () => clearTimers()
   }, [clearTimers])
 
+  /* ── Realtime provisioning subscription ── */
+  useEffect(() => {
+    const unsub = integrations.subscribeToProvisioning((module) => {
+      setChatHistory(prev => [...prev, {
+        role: 'daisy',
+        content: `◈ PROVISIONING BROADCAST RECEIVED\nBlueprint: ${module.blueprintId}\nBuyer: ${module.buyerId}\nHash: ${module.deploymentHash}\nStatus: ${module.status.toUpperCase()}\n\n${module.specifications.length} specifications cryptographically sealed and dispatched.`,
+        ts: Date.now(),
+      }])
+    })
+    return unsub
+  }, [])
+
   /* ── Send message to dAIsy via RAG-first, then blink.ai.streamText ── */
   const sendMessage = useCallback(async (text: string) => {
     setChatHistory(prev => [...prev, { role: 'user', content: text, ts: Date.now() }])
@@ -509,19 +522,38 @@ function BrainConsole() {
           full += `\n\n── SOURCES ──\n${ragResult.sources.slice(0, 3).map(s => `· ${s.filename} (${(s.score * 100).toFixed(0)}%)`).join('\n')}`
         }
       } else {
-        // Fallback to raw AI stream
-        await blink.ai.streamText(
-          {
-            messages: [
+        // Groq fallback: try fast inference before falling through to raw AI
+        let groqUsed = false
+        try {
+          await integrations.groqStreamText(
+            [
               { role: 'system', content: buildSystemPrompt(metrics, prospects.filter(p => p.status === 'PENDING OPERATOR SIGN-OFF').length) },
-              ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+              ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' : 'user', content: m.content })),
               { role: 'user', content: text },
             ],
-            model: 'google/gemini-3-flash',
-            signal: ac.signal,
-          },
-          (chunk: string) => { full += chunk },
-        )
+            (chunk: string) => { full += chunk },
+            ac.signal,
+          )
+          groqUsed = true
+        } catch {
+          // Groq unavailable — fall through to blink.ai.streamText
+        }
+
+        if (!groqUsed) {
+          // Fallback to raw AI stream
+          await blink.ai.streamText(
+            {
+              messages: [
+                { role: 'system', content: buildSystemPrompt(metrics, prospects.filter(p => p.status === 'PENDING OPERATOR SIGN-OFF').length) },
+                ...chatHistory.slice(-8).map(m => ({ role: m.role === 'daisy' ? 'assistant' as const : 'user' as const, content: m.content })),
+                { role: 'user', content: text },
+              ],
+              model: 'google/gemini-3-flash',
+              signal: ac.signal,
+            },
+            (chunk: string) => { full += chunk },
+          )
+        }
       }
       setChatHistory(prev => [...prev, { role: 'daisy', content: full, ts: Date.now() }])
     } catch (err: any) {
@@ -598,6 +630,53 @@ function BrainConsole() {
             },
           )
           provisioningLog = `\n\n── dAIsy PROVISIONING MODULE ──\nBlueprint: ${compiled.blueprintId}\nHash: ${compiled.deploymentHash}\nStatus: ${compiled.status.toUpperCase()}\nAutonomous outreach: ${compiled.outreachDispatched ? '✓ DISPATCHED' : '✗ PENDING'}\n\nAll ${compiled.specifications.length} specifications compiled and cryptographically sealed.`
+
+          // ── Integration service layer: persist & broadcast ──
+          integrations.persistProspect({
+            id: prospect.id,
+            companyName: prospect.companyName,
+            sector: undefined,
+            region: undefined,
+            stage: 'CONTRACT SIGNED & SECURED',
+            inefficiency: prospect.inefficiency,
+            proposedStrategy: prospect.proposedStrategy,
+            complianceChecked: prospect.complianceChecked,
+            estimatedRoiSavings: prospect.estimatedRoiSavings,
+            dynamicCalculatedPrice: prospect.dynamicCalculatedPrice,
+            initialContactTemplate: prospect.initialContactTemplate,
+            probability: 100,
+            status: 'CONTRACT SIGNED & SECURED',
+            lastAction: `Contract signed ${new Date().toISOString()}`,
+          })
+
+          integrations.persistProvisioning(compiled)
+
+          integrations.persistContract({
+            id: `ctr_${Date.now()}_${prospect.id}`,
+            prospectId: prospect.id,
+            companyName: prospect.companyName,
+            grossRevenue: prospect.dynamicCalculatedPrice,
+            taxLiability: prospect.dynamicCalculatedPrice * 0.21,
+            netRevenue: prospect.dynamicCalculatedPrice * 0.79,
+            eftpsTraceId: `EFTPS-${Date.now() % 1000000000}`,
+            status: 'SIGNED',
+            provisioningId: compiled.blueprintId,
+            signedAt: new Date().toISOString(),
+          })
+
+          integrations.logMilestone(
+            'CONTRACT_SIGNED',
+            `<ledger_entry><company>${prospect.companyName}</company><revenue>${prospect.dynamicCalculatedPrice}</revenue></ledger_entry>`,
+          )
+
+          integrations.sendContractNotification(
+            prospect.companyName.toLowerCase().replace(/\s+/g, '') + '@solvex.client',
+            prospect.companyName,
+            prospect.dynamicCalculatedPrice,
+            compiled.blueprintId,
+          )
+
+          integrations.broadcastProvisioning(compiled)
         } catch (err: any) {
           provisioningLog = `\n\n── PROVISIONING FAULT ──\n${err.message}\nManual operator intervention required.`
         }
