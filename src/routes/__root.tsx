@@ -11,6 +11,7 @@ import type { ReactNode } from 'react'
 import indexCss from '../index.css?url'
 import { DaisyFloat } from '@/components/DaisyFloat'
 import { BlinkClientBoundary } from '@/components/BlinkClientBoundary'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 /**
  * Pre-paint theme script. Runs synchronously in <head> BEFORE first paint, so
@@ -111,9 +112,11 @@ function RootDocument({ children }: { children: ReactNode }) {
               stay full-bleed (delete `src/routes/app.tsx` + `src/routes/app/`).
             */}
             {children}
-            <BlinkClientBoundary>
-              <DaisyFloat />
-            </BlinkClientBoundary>
+            <ErrorBoundary>
+              <BlinkClientBoundary>
+                <DaisyFloat />
+              </BlinkClientBoundary>
+            </ErrorBoundary>
           </TooltipProvider>
         </QueryClientProvider>
         <Scripts />

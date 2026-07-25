@@ -466,6 +466,97 @@ function KnowledgeBase() {
   )
 }
 
+/* ── Provisioning Ledger ───────────────────────────────────────────────────── */
+function ProvisioningLedger({ modules }: { modules: CompiledModule[] }) {
+  if (modules.length === 0) {
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>
+          Provisioning Ledger
+        </div>
+        <p style={{ fontFamily: MONO, fontSize: 8, color: MUTED, textAlign: 'center', lineHeight: 1.6, maxWidth: 320 }}>
+          No modules provisioned yet. Authorize an outbound engagement to trigger the dAIsy haMINJA provisioning pipeline.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+      <div style={{ fontFamily: MONO, fontSize: 8, fontWeight: 700, letterSpacing: '0.15em', color: MUTED, textTransform: 'uppercase', marginBottom: 16 }}>
+        Immutable Provisioning Ledger — {modules.length} Entr{modules.length === 1 ? 'y' : 'ies'}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {modules.map((m, i) => (
+          <div key={m.blueprintId} style={{
+            background: PANEL, border: `1px solid ${BORDER}`, padding: 16,
+            animation: `fade-up 0.3s ease-out both`, animationDelay: `${i * 60}ms`,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+              <div>
+                <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.1em', color: G, textTransform: 'uppercase', marginBottom: 2 }}>
+                  BLUEPRINT #{m.blueprintId.slice(0, 12)}...
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED }}>
+                  Buyer: {m.buyerId} · Tier: {m.tier}
+                </div>
+              </div>
+              <span style={{
+                fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.08em',
+                padding: '3px 10px', borderRadius: 2,
+                background: m.status === 'compiled_and_provisioned' ? `${GREEN}18` : m.status === 'failed' ? `${RED}18` : `${G}18`,
+                color: m.status === 'compiled_and_provisioned' ? GREEN : m.status === 'failed' ? RED : G,
+                textTransform: 'uppercase',
+              }}>
+                {m.status.replace(/_/g, ' ')}
+              </span>
+            </div>
+
+            <div style={{ fontFamily: MONO, fontSize: 8, color: MUTED, marginBottom: 8 }}>
+              Hash: {m.deploymentHash ? <span style={{ color: G, fontFamily: MONO }}>{m.deploymentHash}</span> : '—'}
+              {' · '}Outreach: {m.outreachDispatched ? <span style={{ color: GREEN }}>✓ DISPATCHED</span> : '✗ PENDING'}
+              {' · '}{new Date(m.timestamp).toLocaleString()}
+            </div>
+
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.1em', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>
+                Specifications ({m.specifications.length})
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {m.specifications.slice(0, 5).map((s, j) => (
+                  <div key={j} style={{ fontFamily: MONO, fontSize: 8, color: FG, background: `${G}06`, padding: '4px 8px', borderRadius: 2 }}>
+                    {s.length > 100 ? s.slice(0, 97) + '...' : s}
+                  </div>
+                ))}
+                {m.specifications.length > 5 && (
+                  <div style={{ fontFamily: MONO, fontSize: 7, color: MUTED, paddingLeft: 8 }}>
+                    +{m.specifications.length - 5} more
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {m.deploymentLog.length > 0 && (
+              <details>
+                <summary style={{ fontFamily: MONO, fontSize: 7, fontWeight: 700, letterSpacing: '0.1em', color: MUTED, cursor: 'pointer', textTransform: 'uppercase' }}>
+                  Deployment Log ({m.deploymentLog.length})
+                </summary>
+                <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 120, overflowY: 'auto' }}>
+                  {m.deploymentLog.map((line, j) => (
+                    <div key={j} style={{ fontFamily: MONO, fontSize: 7, color: MUTED, paddingLeft: 8, borderLeft: `1px solid ${BORDER}` }}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ── Page Component ────────────────────────────────────────────────────────── */
 export const Route = createFileRoute('/brain')({
   head: () => ({ meta: [{ title: 'Brain Console · SolveX' }] }),
@@ -479,6 +570,7 @@ function BrainConsole() {
   const [metrics, setMetrics] = useState<SandboxMetrics>(INIT_METRICS)
   const [prospects, setProspects] = useState<OutboundProspect[]>(INIT_PROSPECTS)
   const abortRef = useRef<AbortController | null>(null)
+  const [provisionedModules, setProvisionedModules] = useState<CompiledModule[]>([])
 
   const clearTimers = useCallback(() => {
     abortRef.current?.abort()
@@ -580,6 +672,22 @@ function BrainConsole() {
     }])
   }, [])
 
+  /* ── Subscribe to real-time provisioning updates ── */
+  useEffect(() => {
+    const unsub = integrations.subscribeToProvisioning((module) => {
+      setProvisionedModules(prev => {
+        const idx = prev.findIndex(m => m.blueprintId === module.blueprintId)
+        if (idx >= 0) {
+          const next = [...prev]
+          next[idx] = module
+          return next
+        }
+        return [...prev, module]
+      })
+    })
+    return unsub
+  }, [])
+
   /* ── Sandbox refresh ── */
   const refreshTelemetry = useCallback(() => {
     setMetrics(prev => ({
@@ -664,19 +772,11 @@ function BrainConsole() {
             signedAt: new Date().toISOString(),
           })
 
-          integrations.logMilestone(
-            'CONTRACT_SIGNED',
-            `<ledger_entry><company>${prospect.companyName}</company><revenue>${prospect.dynamicCalculatedPrice}</revenue></ledger_entry>`,
-          )
-
-          integrations.sendContractNotification(
-            prospect.companyName.toLowerCase().replace(/\s+/g, '') + '@solvex.client',
-            prospect.companyName,
-            prospect.dynamicCalculatedPrice,
-            compiled.blueprintId,
-          )
-
           integrations.broadcastProvisioning(compiled)
+          integrations.logMilestone(
+            'PROVISIONING_DEPLOYED',
+            `<ledger_entry><blueprint>${compiled.blueprintId}</blueprint><hash>${compiled.deploymentHash}</hash></ledger_entry>`,
+          )
         } catch (err: any) {
           provisioningLog = `\n\n── PROVISIONING FAULT ──\n${err.message}\nManual operator intervention required.`
         }
@@ -695,7 +795,7 @@ function BrainConsole() {
     }])
   }, [prospects])
 
-  const subTabs = ['COMM-LINK', 'SANDBOX UI', 'ROI ANALYTICS', 'OUTBOUND AUTH', 'KNOWLEDGE BASE']
+  const subTabs = ['COMM-LINK', 'SANDBOX UI', 'ROI ANALYTICS', 'OUTBOUND AUTH', 'KNOWLEDGE BASE', 'PROVISIONING']
 
   return (
     <DashboardLayout>
@@ -781,6 +881,7 @@ function BrainConsole() {
         {activeTab === 2 && <RoiAnalytics />}
         {activeTab === 3 && <OutboundAuth prospects={prospects} onAuthorize={authorizeProspect} />}
         {activeTab === 4 && <KnowledgeBase />}
+        {activeTab === 5 && <ProvisioningLedger modules={provisionedModules} />}
       </div>
     </DashboardLayout>
   )
