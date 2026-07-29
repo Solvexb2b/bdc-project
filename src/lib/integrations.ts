@@ -121,7 +121,7 @@ export const integrations = {
 
   subscribeToProvisioning(onUpdate: (module: CompiledModule) => void): () => void {
     const channel = blink.realtime.channel('solvex-provisioning')
-    channel.onMessage((msg) => {
+    channel.onMessage((msg: any) => {
       if (msg.type === 'provisioning-update') onUpdate(msg.data as CompiledModule)
     })
     channel.subscribe({ userId: USER }).catch(() => {})
