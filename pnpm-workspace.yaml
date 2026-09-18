@@ -5,6 +5,7 @@ packages:
   - scripts
 
 allowBuilds:
+  '@tailwindcss/oxide': true
   esbuild: false
 
 autoInstallPeers: false

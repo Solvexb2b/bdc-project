@@ -19,3 +19,13 @@ npm run lint:types # TypeScript (tsc --noEmit)
 npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
 ```
+
+## Optional Blink integration
+
+Blink is disabled in the default build path. The app now builds without Blink dependencies installed, while Blink source code stays in the repo.
+
+To re-enable Blink locally, install `@blinkdotnew/sdk` and set:
+
+- `VITE_ENABLE_BLINK=true`
+- `VITE_BLINK_PROJECT_ID=...`
+- `VITE_BLINK_PUBLISHABLE_KEY=...`
